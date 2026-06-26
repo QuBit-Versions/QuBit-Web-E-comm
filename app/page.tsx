@@ -1,11 +1,11 @@
 import { Block } from "@/components/ui/Block";
 import { SnapMode } from "@/components/ui/SnapMode";
 import { Hero } from "@/components/home/Hero";
+import { Universe } from "@/components/home/Universe";
 import { Problem } from "@/components/home/Problem";
 import { Solution } from "@/components/home/Solution";
 import { HowItWorks } from "@/components/home/HowItWorks";
 import { Modules } from "@/components/home/Modules";
-import { Proof } from "@/components/home/Proof";
 import { Transparency } from "@/components/home/Transparency";
 import { Partnership } from "@/components/home/Partnership";
 import { Faq } from "@/components/home/Faq";
@@ -19,11 +19,11 @@ export default function Home() {
     <main id="main-content">
       <SnapMode />
       <Block><Hero /></Block>
+      <Block><Universe /></Block>
       <Block><Problem /></Block>
       <Block><Solution /></Block>
       <Block><HowItWorks /></Block>
       <Block><Modules /></Block>
-      <Block><Proof /></Block>
       <Block><Transparency /></Block>
       <Block><Partnership /></Block>
       <Block><Faq /></Block>
