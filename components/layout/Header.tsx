@@ -59,8 +59,14 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <ButtonLink href="/servicos" size="sm" className="hidden md:inline-flex">
-              Agendar diagnóstico
+            <Link
+              href="/entrar"
+              className="font-sans hidden md:inline-flex text-sm text-text-2 hover:text-text-1 transition-colors"
+            >
+              Entrar
+            </Link>
+            <ButtonLink href="/cadastro" size="sm" className="hidden md:inline-flex">
+              Criar conta
             </ButtonLink>
             <button
               aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
@@ -106,8 +112,15 @@ export function Header() {
               {link.label}
             </Link>
           ))}
-          <ButtonLink href="/servicos" className="mt-2 w-full justify-center" onClick={() => setMenuOpen(false)}>
-            Agendar diagnóstico
+          <Link
+            href="/entrar"
+            className="text-lg text-text-1 hover:text-text-2 transition-colors"
+            onClick={() => setMenuOpen(false)}
+          >
+            Entrar
+          </Link>
+          <ButtonLink href="/cadastro" className="mt-2 w-full justify-center" onClick={() => setMenuOpen(false)}>
+            Criar conta
           </ButtonLink>
         </nav>
       </div>

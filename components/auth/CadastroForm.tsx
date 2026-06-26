@@ -21,7 +21,7 @@ function traduzErro(msg: string) {
   return "Não conseguimos criar a conta agora. Tente de novo em instantes.";
 }
 
-export function CadastroForm() {
+export function CadastroForm({ interesseIds = [] }: { interesseIds?: string[] }) {
   const [sentTo, setSentTo] = useState<string | null>(null);
   const {
     register,
@@ -43,6 +43,7 @@ export function CadastroForm() {
           area: data.area,
           regiao: data.regiao,
           telefone: data.telefone,
+          interesses: interesseIds,
         },
         emailRedirectTo: `${window.location.origin}/auth/confirm?next=/painel`,
       },

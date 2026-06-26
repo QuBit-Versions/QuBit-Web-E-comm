@@ -6,14 +6,14 @@ import { useSelection } from "./SelectionContext";
 
 /**
  * Barra flutuante: aparece quando há serviços marcados como de interesse e leva
- * ao diagnóstico já com as escolhas (via ?interesse=ids).
+ * à criação de conta já com as escolhas (via ?interesse=ids).
  */
 export function SelectionBar() {
   const sel = useSelection();
   if (!sel || sel.selected.length === 0) return null;
 
   const n = sel.selected.length;
-  const href = `/diagnostico?interesse=${encodeURIComponent(sel.selected.join(","))}`;
+  const href = `/cadastro?interesse=${encodeURIComponent(sel.selected.join(","))}`;
 
   return (
     <div className="fixed bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 z-40 font-sans">
@@ -33,7 +33,7 @@ export function SelectionBar() {
           href={href}
           className="inline-flex items-center gap-2 bg-brand text-paper rounded-xl px-5 min-h-[44px] text-sm font-medium [box-shadow:var(--glow-brand)] hover:[box-shadow:var(--glow-brand-strong)] transition-all"
         >
-          Agendar diagnóstico
+          Criar conta
           <ArrowRight className="w-4 h-4" aria-hidden />
         </Link>
       </div>

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CadastroForm } from "@/components/auth/CadastroForm";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { site } from "@/content/copy";
+import { services } from "@/content/services";
 
 export const metadata: Metadata = {
   title: `Cadastro de parceiro — ${site.name}`,
@@ -10,7 +11,21 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
-export default function CadastroPage() {
+export default async function CadastroPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ interesse?: string }>;
+}) {
+  const { interesse } = await searchParams;
+  // ids vindos de /servicos → nomes legíveis (ignora ids inexistentes)
+  const interesses = (interesse ?? "")
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean)
+    .map((id) => services.find((s) => s.id === id))
+    .filter((s): s is (typeof services)[number] => Boolean(s))
+    .map((s) => ({ id: s.id, name: s.name }));
+
   return (
     <main id="main-content" className="min-h-screen flex items-center justify-center px-6 py-32">
       <div className="w-full max-w-xl">
@@ -23,8 +38,26 @@ export default function CadastroPage() {
           <p className="text-text-2">Para enviar e acompanhar suas demandas com a QuBit.</p>
         </div>
 
+        {interesses.length > 0 && (
+          <div className="surface-glass rounded-2xl p-5 mb-6">
+            <p className="font-sans text-mono-label text-text-3 mb-3">
+              {interesses.length} {interesses.length === 1 ? "solução escolhida" : "soluções escolhidas"} — vão junto com sua conta
+            </p>
+            <ul className="flex flex-wrap gap-2">
+              {interesses.map((i) => (
+                <li
+                  key={i.id}
+                  className="font-sans text-xs border border-brand/30 text-brand-text rounded-full px-3 py-1"
+                >
+                  {i.name}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         <div className="surface-glass glow-aurora rounded-2xl p-8 md:p-10">
-          <CadastroForm />
+          <CadastroForm interesseIds={interesses.map((i) => i.id)} />
         </div>
       </div>
     </main>

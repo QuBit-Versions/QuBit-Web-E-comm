@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Briefcase, MapPin, Phone, Mail, ShieldCheck } from "lucide-react";
+import { Briefcase, MapPin, Phone, Mail, ShieldCheck, Building2 } from "lucide-react";
 import { createSupabaseServer } from "@/lib/supabaseServer";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { LogoUpload } from "@/components/painel/LogoUpload";
 import { NovaDemandaForm } from "@/components/painel/NovaDemandaForm";
+import { StatusSelect } from "@/components/painel/StatusSelect";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { areas } from "@/lib/auth-validation";
+import { services } from "@/content/services";
 
 export const metadata: Metadata = { title: "Painel — QuBit", robots: { index: false } };
 
@@ -35,6 +37,19 @@ type Demanda = {
   profiles?: { nome_fantasia: string | null; area: string | null; regiao: string | null } | null;
 };
 
+type Empresa = {
+  id: string;
+  created_at: string;
+  nome_fantasia: string | null;
+  cnpj: string | null;
+  responsavel: string | null;
+  area: string | null;
+  regiao: string | null;
+  telefone: string | null;
+  email: string | null;
+  logo_url: string | null;
+};
+
 export default async function PainelPage() {
   const supabase = await createSupabaseServer();
   const {
@@ -45,6 +60,32 @@ export default async function PainelPage() {
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
   const isAdmin = profile?.role === "admin";
 
+  // Semente: serviços escolhidos no cadastro viram a 1ª demanda no primeiro login.
+  // Só roda para empresa, uma única vez (limpa o metadata depois de garantir a demanda).
+  if (!isAdmin) {
+    const interesses = (user.user_metadata?.interesses ?? []) as string[];
+    if (interesses.length > 0) {
+      const { count } = await supabase
+        .from("demandas")
+        .select("id", { count: "exact", head: true })
+        .eq("empresa_id", user.id);
+      let seeded = (count ?? 0) > 0;
+      if (!seeded) {
+        const nomes = interesses
+          .map((id) => services.find((s) => s.id === id)?.name)
+          .filter((n): n is string => Boolean(n));
+        const { error } = await supabase.from("demandas").insert({
+          empresa_id: user.id,
+          titulo: "Soluções de interesse",
+          descricao: nomes.length ? `Selecionadas no cadastro: ${nomes.join(", ")}.` : null,
+          interesses,
+        });
+        seeded = !error;
+      }
+      if (seeded) await supabase.auth.updateUser({ data: { interesses: [] } });
+    }
+  }
+
   const { data: demandas } = isAdmin
     ? await supabase
         .from("demandas")
@@ -53,6 +94,17 @@ export default async function PainelPage() {
     : await supabase.from("demandas").select("*").eq("empresa_id", user.id).order("created_at", { ascending: false });
 
   const lista = (demandas ?? []) as Demanda[];
+
+  // Admin: todas as empresas cadastradas (mesmo as sem demanda).
+  const empresas = isAdmin
+    ? (((
+        await supabase
+          .from("profiles")
+          .select("*")
+          .eq("role", "empresa")
+          .order("created_at", { ascending: false })
+      ).data ?? []) as Empresa[])
+    : [];
 
   return (
     <main id="main-content" className="min-h-screen pt-28 pb-20 px-6">
@@ -70,14 +122,71 @@ export default async function PainelPage() {
         </header>
 
         {isAdmin ? (
-          /* ── Admin: todas as demandas ── */
+          /* ── Admin: empresas cadastradas + todas as demandas ── */
           <>
             <h1 className="text-h1 text-text-1 mb-2 flex items-center gap-3">
-              <ShieldCheck className="w-7 h-7 text-brand-text" aria-hidden /> Demandas das empresas
+              <ShieldCheck className="w-7 h-7 text-brand-text" aria-hidden /> Painel da QuBit
             </h1>
-            <p className="text-body-lg text-text-2 mb-10">
-              {lista.length} {lista.length === 1 ? "demanda" : "demandas"} no total.
+            <p className="text-body-lg text-text-2 mb-12">
+              {empresas.length} {empresas.length === 1 ? "empresa cadastrada" : "empresas cadastradas"} ·{" "}
+              {lista.length} {lista.length === 1 ? "demanda" : "demandas"}.
             </p>
+
+            {/* Empresas cadastradas */}
+            <h2 className="text-h2 text-text-1 mb-6 flex items-center gap-2">
+              <Building2 className="w-6 h-6 text-brand-text" aria-hidden /> Empresas cadastradas
+            </h2>
+            <div className="grid gap-4 sm:grid-cols-2 mb-16">
+              {empresas.map((e) => (
+                <div key={e.id} className="surface-glass rounded-2xl p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    {e.logo_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={e.logo_url} alt="" className="w-11 h-11 rounded-lg object-contain bg-surface-2 shrink-0" />
+                    ) : (
+                      <span className="w-11 h-11 rounded-lg bg-surface-2 flex items-center justify-center text-text-3 shrink-0" aria-hidden>
+                        <Building2 className="w-5 h-5" />
+                      </span>
+                    )}
+                    <div className="min-w-0">
+                      <h3 className="text-text-1 font-medium truncate">{e.nome_fantasia || "—"}</h3>
+                      <p className="font-sans text-xs text-text-3 truncate">
+                        {areaLabel(e.area)} · {e.regiao ?? "—"}
+                      </p>
+                    </div>
+                  </div>
+                  <dl className="grid gap-2 text-sm">
+                    <div className="flex items-center gap-2 text-text-2">
+                      <Briefcase className="w-4 h-4 text-text-3 shrink-0" aria-hidden />
+                      <span className="truncate">
+                        {e.responsavel ?? "—"}
+                        {e.cnpj ? ` · ${e.cnpj}` : ""}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-text-2">
+                      <Phone className="w-4 h-4 text-text-3 shrink-0" aria-hidden />
+                      <span className="truncate">{e.telefone ?? "—"}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-text-2">
+                      <Mail className="w-4 h-4 text-text-3 shrink-0" aria-hidden />
+                      {e.email ? (
+                        <a href={`mailto:${e.email}`} className="truncate text-brand-text hover:underline">
+                          {e.email}
+                        </a>
+                      ) : (
+                        <span>—</span>
+                      )}
+                    </div>
+                  </dl>
+                </div>
+              ))}
+              {empresas.length === 0 && <p className="text-text-3">Nenhuma empresa cadastrada ainda.</p>}
+            </div>
+
+            {/* Demandas */}
+            <h2 className="text-h2 text-text-1 mb-6 flex items-center gap-2">
+              <Briefcase className="w-6 h-6 text-brand-text" aria-hidden /> Demandas das empresas
+            </h2>
 
             <div className="grid gap-4">
               {lista.map((d) => (
@@ -85,7 +194,7 @@ export default async function PainelPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-1">
                       <h3 className="text-text-1 font-medium">{d.titulo}</h3>
-                      <StatusBadge status={d.status} />
+                      <StatusSelect demandaId={d.id} status={d.status} />
                     </div>
                     {d.descricao && <p className="text-text-2 text-sm mb-2">{d.descricao}</p>}
                     <p className="font-sans text-xs text-text-3">
