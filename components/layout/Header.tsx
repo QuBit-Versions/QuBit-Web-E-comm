@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ButtonLink } from "@/components/ui/Button";
+import { useRouter } from "next/navigation";
+import { Button, ButtonLink } from "@/components/ui/Button";
 import { Wordmark } from "@/components/brand/Wordmark";
+import { createSupabaseBrowser } from "@/lib/supabaseBrowser";
 
 const navLinks = [
   { href: "/#solucao", label: "Solução" },
@@ -13,8 +15,11 @@ const navLinks = [
 ];
 
 export function Header() {
+  const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  // null = ainda não sabemos (evita decidir UI antes de ler o cookie de sessão)
+  const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 8);
@@ -22,6 +27,24 @@ export function Header() {
     window.addEventListener("scroll", handler, { passive: true });
     return () => window.removeEventListener("scroll", handler);
   }, []);
+
+  // Reflete a sessão persistida e reage a login/logout em qualquer aba.
+  useEffect(() => {
+    const supabase = createSupabaseBrowser();
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      setLoggedIn(!!session?.user);
+    });
+    return () => data.subscription.unsubscribe();
+  }, []);
+
+  const logout = async () => {
+    await createSupabaseBrowser().auth.signOut();
+    setMenuOpen(false);
+    router.push("/");
+    router.refresh();
+  };
+
+  const isAuthed = loggedIn === true;
 
   useEffect(() => {
     if (menuOpen) {
@@ -59,15 +82,33 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <Link
-              href="/entrar"
-              className="font-sans hidden md:inline-flex text-sm text-text-2 hover:text-text-1 transition-colors"
-            >
-              Entrar
-            </Link>
-            <ButtonLink href="/cadastro" size="sm" className="hidden md:inline-flex">
-              Criar conta
-            </ButtonLink>
+            {isAuthed ? (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={logout}
+                  className="font-sans hidden md:inline-flex text-text-2 hover:text-text-1"
+                >
+                  Sair
+                </Button>
+                <ButtonLink href="/painel" size="sm" className="hidden md:inline-flex">
+                  Painel
+                </ButtonLink>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/entrar"
+                  className="font-sans hidden md:inline-flex text-sm text-text-2 hover:text-text-1 transition-colors"
+                >
+                  Entrar
+                </Link>
+                <ButtonLink href="/cadastro" size="sm" className="hidden md:inline-flex">
+                  Criar conta
+                </ButtonLink>
+              </>
+            )}
             <button
               aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
               aria-expanded={menuOpen}
@@ -112,16 +153,29 @@ export function Header() {
               {link.label}
             </Link>
           ))}
-          <Link
-            href="/entrar"
-            className="text-lg text-text-1 hover:text-text-2 transition-colors"
-            onClick={() => setMenuOpen(false)}
-          >
-            Entrar
-          </Link>
-          <ButtonLink href="/cadastro" className="mt-2 w-full justify-center" onClick={() => setMenuOpen(false)}>
-            Criar conta
-          </ButtonLink>
+          {isAuthed ? (
+            <>
+              <ButtonLink href="/painel" className="mt-2 w-full justify-center" onClick={() => setMenuOpen(false)}>
+                Painel
+              </ButtonLink>
+              <Button variant="secondary" onClick={logout} className="w-full justify-center">
+                Sair
+              </Button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/entrar"
+                className="text-lg text-text-1 hover:text-text-2 transition-colors"
+                onClick={() => setMenuOpen(false)}
+              >
+                Entrar
+              </Link>
+              <ButtonLink href="/cadastro" className="mt-2 w-full justify-center" onClick={() => setMenuOpen(false)}>
+                Criar conta
+              </ButtonLink>
+            </>
+          )}
         </nav>
       </div>
     </>
