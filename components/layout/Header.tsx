@@ -18,8 +18,11 @@ export function Header() {
   const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  // Sem env do Supabase no deploy, o header fica em modo visitante (não derruba a página).
+  const hasSupabaseEnv =
+    !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   // null = ainda não sabemos (evita decidir UI antes de ler o cookie de sessão)
-  const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
+  const [loggedIn, setLoggedIn] = useState<boolean | null>(hasSupabaseEnv ? null : false);
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 8);
@@ -30,15 +33,20 @@ export function Header() {
 
   // Reflete a sessão persistida e reage a login/logout em qualquer aba.
   useEffect(() => {
+    if (!hasSupabaseEnv) return;
     const supabase = createSupabaseBrowser();
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       setLoggedIn(!!session?.user);
     });
     return () => data.subscription.unsubscribe();
-  }, []);
+  }, [hasSupabaseEnv]);
 
   const logout = async () => {
-    await createSupabaseBrowser().auth.signOut();
+    try {
+      await createSupabaseBrowser().auth.signOut();
+    } catch {
+      // sem env de Supabase — apenas segue para a home
+    }
     setMenuOpen(false);
     router.push("/");
     router.refresh();
