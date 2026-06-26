@@ -8,12 +8,14 @@ import { AlertCircle, MailCheck } from "lucide-react";
 import { Field } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 import { createSupabaseBrowser } from "@/lib/supabaseBrowser";
-import { cadastroSchema, type CadastroData } from "@/lib/auth-validation";
+import { cadastroSchema, areas, type CadastroData } from "@/lib/auth-validation";
+
+const selectBase =
+  "font-sans w-full bg-[var(--glass-bg)] backdrop-blur-md border border-line rounded-xl px-4 py-3 min-h-12 text-text-1 transition-all duration-fast focus:outline-none focus:border-brand-text focus:[box-shadow:var(--glow-brand)] aria-[invalid=true]:border-danger appearance-none cursor-pointer";
 
 function traduzErro(msg: string) {
   const m = msg.toLowerCase();
-  if (m.includes("already registered") || m.includes("already exists"))
-    return "Esse e-mail já tem uma conta. Tente entrar.";
+  if (m.includes("already registered") || m.includes("already exists")) return "Esse e-mail já tem uma conta. Tente entrar.";
   if (m.includes("password")) return "Senha muito curta — use ao menos 8 caracteres.";
   if (m.includes("rate") || m.includes("too many")) return "Muitas tentativas. Aguarde um instante e tente de novo.";
   return "Não conseguimos criar a conta agora. Tente de novo em instantes.";
@@ -35,10 +37,12 @@ export function CadastroForm() {
       password: data.senha,
       options: {
         data: {
-          nome_empresa: data.nome_empresa,
+          nome_fantasia: data.nome_fantasia,
           cnpj: data.cnpj ?? "",
           responsavel: data.responsavel,
-          whatsapp: data.whatsapp,
+          area: data.area,
+          regiao: data.regiao,
+          telefone: data.telefone,
         },
         emailRedirectTo: `${window.location.origin}/auth/confirm?next=/painel`,
       },
@@ -76,12 +80,12 @@ export function CadastroForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5" aria-label="Cadastro de empresa parceira">
       <Field
-        label="Nome da empresa"
+        label="Nome fantasia"
         placeholder="Como sua empresa se chama?"
         autoComplete="organization"
         required
-        error={errors.nome_empresa?.message}
-        {...register("nome_empresa")}
+        error={errors.nome_fantasia?.message}
+        {...register("nome_fantasia")}
       />
 
       <div className="grid sm:grid-cols-2 gap-5">
@@ -97,14 +101,48 @@ export function CadastroForm() {
       </div>
 
       <div className="grid sm:grid-cols-2 gap-5">
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="area" className="text-sm font-medium text-text-1">
+            Área da empresa <span className="text-brand-text ml-1" aria-hidden>*</span>
+          </label>
+          <div className="relative">
+            <select id="area" defaultValue="" aria-invalid={errors.area ? true : undefined} className={selectBase} {...register("area")}>
+              <option value="" disabled>Escolha a área…</option>
+              {areas.map((a) => (
+                <option key={a.value} value={a.value} className="bg-surface-2">
+                  {a.label}
+                </option>
+              ))}
+            </select>
+            <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-text-3" aria-hidden>▾</span>
+          </div>
+          {errors.area && (
+            <p role="alert" className="flex items-center gap-1.5 text-xs text-danger mt-0.5">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" aria-hidden />
+              {errors.area.message}
+            </p>
+          )}
+        </div>
+
         <Field
-          label="WhatsApp"
+          label="Região"
+          placeholder="Cidade / Estado"
+          autoComplete="address-level2"
+          required
+          error={errors.regiao?.message}
+          {...register("regiao")}
+        />
+      </div>
+
+      <div className="grid sm:grid-cols-2 gap-5">
+        <Field
+          label="Telefone"
           type="tel"
           placeholder="(21) 99999-9999"
           autoComplete="tel"
           required
-          error={errors.whatsapp?.message}
-          {...register("whatsapp")}
+          error={errors.telefone?.message}
+          {...register("telefone")}
         />
         <Field
           label="E-mail"
@@ -126,6 +164,8 @@ export function CadastroForm() {
         error={errors.senha?.message}
         {...register("senha")}
       />
+
+      <p className="text-xs text-text-3">A logo da empresa você envia depois, já dentro do painel.</p>
 
       {errors.root && (
         <div role="alert" className="flex items-start gap-3 p-4 border border-danger/30 bg-danger/5 rounded-xl">
