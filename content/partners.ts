@@ -18,4 +18,12 @@ export const partners: Partner[] = [
   { id: "lumen",    name: "Casa Lúmen",        sector: "Casa & Decoração", url: "#" },
   { id: "proforma", name: "ProForma Fit",      sector: "Fitness",         url: "#" },
   { id: "mentor",   name: "Mentor Lab",        sector: "Educação",        url: "#" },
+  { id: "aurora",   name: "Aurora Joias",      sector: "Acessórios",      url: "#" },
+  { id: "verde",    name: "Verde Vida",        sector: "Saúde",           url: "#" },
+  { id: "tropic",   name: "Tropic Surf",       sector: "Esporte",         url: "#" },
+  { id: "bambu",    name: "Bambu Kids",        sector: "Infantil",        url: "#" },
+  { id: "forno",    name: "Forno & Brasa",     sector: "Café & Alimentos",url: "#" },
+  { id: "pixel",    name: "Pixel Games",       sector: "Eletrônicos",     url: "#" },
+  { id: "luz",      name: "Luz Cosméticos",    sector: "Beleza",          url: "#" },
+  { id: "raiz",     name: "Raiz Natural",      sector: "Suplementos",     url: "#" },
 ];

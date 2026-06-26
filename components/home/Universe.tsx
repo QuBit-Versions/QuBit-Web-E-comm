@@ -1,19 +1,26 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { partners, type Partner } from "@/content/partners";
+import { Wordmark } from "@/components/brand/Wordmark";
 
 const st = (i: number, dir = 0) => ({ ["--i" as string]: i, ["--dir" as string]: dir } as React.CSSProperties);
 
 // Constelação elástica: anéis concêntricos com capacidade ~proporcional ao raio.
-// Cresce de 1 até 4 anéis; nós e rótulos encolhem com a densidade. Gargalo ~43.
+// Cresce de 1 até 4 anéis (multi-anel já a partir de ~8); nós e rótulos encolhem
+// com a densidade. Gargalo ~48; acima disso, nó "+N" leva ao /universo.
 const RINGS = [
   { r: 44, cap: 18 },
-  { r: 32, cap: 13 },
-  { r: 21, cap: 8 },
-  { r: 11, cap: 4 },
+  { r: 32, cap: 14 },
+  { r: 21, cap: 10 },
+  { r: 11, cap: 6 },
 ];
 const RY = 0.84; // anéis quase circulares → distribuição visual uniforme
-const MAX = RINGS.reduce((s, r) => s + r.cap, 0); // 43
+const MAX = RINGS.reduce((s, r) => s + r.cap, 0); // 48
+
+// Nº de anéis pela quantidade (estética): vira multi-anel cedo e fica "cheio".
+function ringCount(total: number) {
+  return total <= 7 ? 1 : total <= 16 ? 2 : total <= 28 ? 3 : 4;
+}
 
 type Item = { kind: "partner"; partner: Partner } | { kind: "more"; count: number };
 type Placed = Item & { x: number; y: number };
@@ -21,13 +28,7 @@ type Placed = Item & { x: number; y: number };
 // Escolhe quantos anéis e distribui os nós de forma BALANCEADA (proporcional ao
 // raio de cada anel), respeitando o teto de cada um.
 function chooseRings(total: number) {
-  let k = 1;
-  let cum = 0;
-  for (let i = 0; i < RINGS.length; i++) {
-    cum += RINGS[i].cap;
-    k = i + 1;
-    if (cum >= total) break;
-  }
+  const k = Math.min(RINGS.length, ringCount(total));
   const rings = RINGS.slice(0, k);
   const sumR = rings.reduce((s, r) => s + r.r, 0);
   const counts = rings.map((r) => Math.min(r.cap, Math.max(1, Math.round((total * r.r) / sumR))));
@@ -59,7 +60,7 @@ function build() {
   }
 
   // Tamanho do nó e rótulos conforme a densidade.
-  const size = total <= 10 ? 52 : total <= 18 ? 42 : total <= 28 ? 34 : 28;
+  const size = total <= 8 ? 54 : total <= 14 ? 44 : total <= 24 ? 34 : 28;
   return { placed, ringsUsed, size, showLabels: total <= 12, showLines: total <= 10 };
 }
 
@@ -131,12 +132,12 @@ export function Universe() {
             </g>
           </svg>
 
-          {/* núcleo QuBit */}
+          {/* núcleo — o nome da marca (Wordmark) no centro da constelação */}
           <div
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full surface-glass-strong [box-shadow:var(--glow-brand-strong)] flex items-center justify-center"
-            aria-hidden
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 surface-glass-strong [box-shadow:var(--glow-brand-strong)] rounded-2xl px-4 py-2.5"
+            title="QuBit"
           >
-            <span className="font-sans text-mono-label text-brand-text">QuBit</span>
+            <Wordmark className="h-6 w-auto text-paper" />
           </div>
 
           {/* nós */}
