@@ -12,6 +12,14 @@ export const site = {
   footerSignature: "(0+1)/√2", // easter egg — amplitude do qubit em superposição
 };
 
+// Redes sociais — TODO: trocar pelos perfis/handles reais da QuBit.
+export const socials = [
+  { id: "instagram", label: "Instagram", href: "https://instagram.com/" },
+  { id: "x", label: "X", href: "https://x.com/" },
+  { id: "linkedin", label: "LinkedIn", href: "https://www.linkedin.com/company/" },
+  { id: "email", label: "E-mail", href: `mailto:${site.email}` },
+] as const;
+
 export const hero = {
   eyebrow: "· tecnologia & crescimento",
   h1: "A tecnologia e o crescimento do seu negócio — num só lugar.",
