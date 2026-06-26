@@ -14,7 +14,7 @@ export const site = {
 
 // Redes sociais — TODO: trocar pelos perfis/handles reais da QuBit.
 export const socials = [
-  { id: "instagram", label: "Instagram", href: "https://instagram.com/" },
+  { id: "instagram", label: "Instagram", href: "https://www.instagram.com/qubit.central/" },
   { id: "x", label: "X", href: "https://x.com/" },
   { id: "linkedin", label: "LinkedIn", href: "https://www.linkedin.com/company/" },
   { id: "email", label: "E-mail", href: `mailto:${site.email}` },

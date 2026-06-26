@@ -1,20 +1,53 @@
-import { site } from "@/content/copy";
+import { site, socials } from "@/content/copy";
 
 export function WhatsAppFab() {
   const whatsappUrl = `https://wa.me/${site.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(
     site.whatsappMessage
   )}`;
+  const instagram = socials.find((s) => s.id === "instagram");
 
   return (
-    <a
-      href={whatsappUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Falar no WhatsApp"
-      className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full bg-whatsapp text-paper [box-shadow:0_8px_30px_-6px_color-mix(in_srgb,var(--whatsapp)_60%,transparent)] hover:scale-105 hover:[box-shadow:0_10px_40px_-6px_color-mix(in_srgb,var(--whatsapp)_75%,transparent)] active:scale-95 transition-all duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-whatsapp focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+    <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3">
+      {instagram && (
+        <a
+          href={instagram.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Seguir no Instagram"
+          className="flex items-center justify-center w-14 h-14 rounded-full surface-glass-strong border border-line text-text-1 [box-shadow:var(--elev-2)] hover:scale-105 hover:text-brand-text active:scale-95 transition-all duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-text focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+        >
+          <InstagramIcon />
+        </a>
+      )}
+      <a
+        href={whatsappUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Falar no WhatsApp"
+        className="flex items-center justify-center w-14 h-14 rounded-full bg-whatsapp text-paper [box-shadow:0_8px_30px_-6px_color-mix(in_srgb,var(--whatsapp)_60%,transparent)] hover:scale-105 hover:[box-shadow:0_10px_40px_-6px_color-mix(in_srgb,var(--whatsapp)_75%,transparent)] active:scale-95 transition-all duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-whatsapp focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+      >
+        <WhatsAppIcon />
+      </a>
+    </div>
+  );
+}
+
+// Ícone de marca em SVG próprio (lucide removeu os de marca por trademark).
+function InstagramIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      aria-hidden
+      className="w-6 h-6"
     >
-      <WhatsAppIcon />
-    </a>
+      <rect x="2.5" y="2.5" width="19" height="19" rx="5.5" />
+      <circle cx="12" cy="12" r="4.2" />
+      <circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none" />
+    </svg>
   );
 }
 
