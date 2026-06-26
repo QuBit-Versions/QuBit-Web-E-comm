@@ -5,7 +5,7 @@ export const site = {
   tagline: "tecnologia & crescimento",
   domain: "qubit.com.br", // TODO: confirmar domínio
   email: "qubit.central@gmail.com",
-  whatsapp: "+5521999999999", // TODO: número real
+  whatsapp: "+5521988664557",
   whatsappMessage: "Olá! Gostaria de agendar um diagnóstico gratuito.",
   cnpj: "67.220.552/0001-86",
   city: "Rio de Janeiro/RJ",
