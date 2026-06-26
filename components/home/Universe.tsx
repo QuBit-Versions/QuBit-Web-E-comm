@@ -4,44 +4,63 @@ import { partners, type Partner } from "@/content/partners";
 
 const st = (i: number, dir = 0) => ({ ["--i" as string]: i, ["--dir" as string]: dir } as React.CSSProperties);
 
-const CAP = 8; // máximo de nós no teaser; o resto vira "+N" → /universo
+// Constelação elástica: anéis concêntricos com capacidade ~proporcional ao raio.
+// Cresce de 1 até 4 anéis; nós e rótulos encolhem com a densidade. Gargalo ~43.
+const RINGS = [
+  { r: 44, cap: 18 },
+  { r: 32, cap: 13 },
+  { r: 21, cap: 8 },
+  { r: 11, cap: 4 },
+];
+const RY = 0.84; // anéis quase circulares → distribuição visual uniforme
+const MAX = RINGS.reduce((s, r) => s + r.cap, 0); // 43
 
-type Node =
-  | { kind: "partner"; partner: Partner; x: number; y: number }
-  | { kind: "more"; count: number; x: number; y: number };
+type Item = { kind: "partner"; partner: Partner } | { kind: "more"; count: number };
+type Placed = Item & { x: number; y: number };
 
-// Distribui `count` pontos num anel elíptico (rx, ry), começando em startDeg.
-function ring(count: number, rx: number, ry: number, startDeg: number) {
-  return Array.from({ length: count }, (_, i) => {
-    const a = ((startDeg + (i * 360) / count) * Math.PI) / 180;
-    return { x: 50 + rx * Math.cos(a), y: 50 + ry * Math.sin(a) };
-  });
+// Escolhe quantos anéis e distribui os nós de forma BALANCEADA (proporcional ao
+// raio de cada anel), respeitando o teto de cada um.
+function chooseRings(total: number) {
+  let k = 1;
+  let cum = 0;
+  for (let i = 0; i < RINGS.length; i++) {
+    cum += RINGS[i].cap;
+    k = i + 1;
+    if (cum >= total) break;
+  }
+  const rings = RINGS.slice(0, k);
+  const sumR = rings.reduce((s, r) => s + r.r, 0);
+  const counts = rings.map((r) => Math.min(r.cap, Math.max(1, Math.round((total * r.r) / sumR))));
+  let diff = total - counts.reduce((a, b) => a + b, 0);
+  for (let pass = 0; diff !== 0 && pass < 12; pass++) {
+    for (let i = 0; i < rings.length && diff > 0; i++) if (counts[i] < rings[i].cap) (counts[i]++, diff--);
+    for (let i = rings.length - 1; i >= 0 && diff < 0; i--) if (counts[i] > 1) (counts[i]--, diff++);
+  }
+  return rings.map((r, i) => ({ r: r.r, count: counts[i], start: -90 + i * 25 }));
 }
 
-// Layout que escala: 1 anel até 6 nós, 2 anéis acima disso.
-function layout(): { nodes: Node[]; rings: { rx: number; ry: number }[] } {
-  const overflow = partners.length > CAP ? partners.length - (CAP - 1) : 0;
-  const shown = overflow > 0 ? partners.slice(0, CAP - 1) : partners.slice(0, CAP);
-  const total = shown.length + (overflow > 0 ? 1 : 0);
+function build() {
+  const overflow = partners.length > MAX ? partners.length - (MAX - 1) : 0;
+  const shown = partners.slice(0, overflow > 0 ? MAX - 1 : Math.min(partners.length, MAX));
+  const items: Item[] = shown.map((partner) => ({ kind: "partner", partner }));
+  if (overflow > 0) items.push({ kind: "more", count: overflow });
+  const total = items.length;
 
-  let positions: { x: number; y: number }[];
-  let rings: { rx: number; ry: number }[];
-  if (total <= 6) {
-    rings = [{ rx: 38, ry: 34 }];
-    positions = ring(total, 38, 34, -90);
-  } else {
-    const outer = Math.ceil(total / 2);
-    const inner = total - outer;
-    rings = [
-      { rx: 43, ry: 37 },
-      { rx: 25, ry: 21 },
-    ];
-    positions = [...ring(outer, 43, 37, -90), ...ring(inner, 25, 21, -90 + 180 / Math.max(1, inner))];
+  const ringsUsed = chooseRings(total);
+
+  // Posiciona os itens nos anéis.
+  const placed: Placed[] = [];
+  let idx = 0;
+  for (const ring of ringsUsed) {
+    for (let j = 0; j < ring.count; j++) {
+      const a = ((ring.start + (j * 360) / ring.count) * Math.PI) / 180;
+      placed.push({ ...items[idx++], x: 50 + ring.r * Math.cos(a), y: 50 + ring.r * RY * Math.sin(a) });
+    }
   }
 
-  const nodes: Node[] = shown.map((partner, i) => ({ kind: "partner", partner, ...positions[i] }));
-  if (overflow > 0) nodes.push({ kind: "more", count: overflow, ...positions[total - 1] });
-  return { nodes, rings };
+  // Tamanho do nó e rótulos conforme a densidade.
+  const size = total <= 10 ? 52 : total <= 18 ? 42 : total <= 28 ? 34 : 28;
+  return { placed, ringsUsed, size, showLabels: total <= 12, showLines: total <= 10 };
 }
 
 function initials(name: string) {
@@ -54,13 +73,13 @@ function initials(name: string) {
 }
 
 /**
- * Prova social = o universo QuBit (2º bloco). F-pattern (palavras-chave à
- * esquerda), chunking (stats/badges), hierarquia e white space. Cada parceiro é
- * um LINK (logo ou iniciais); a constelação escala para N parceiros (1–2 anéis)
- * e leva à experiência 3D completa em /universo.
+ * Prova social = o universo QuBit (2º bloco). F-pattern, chunking, hierarquia e
+ * white space. Cada parceiro é um LINK (logo ou iniciais). A constelação se
+ * AUTOAJUSTA ao número de parceiros (1–4 anéis, nós menores conforme cresce) até
+ * ~43; além disso, um nó "+N" leva ao /universo (3D sem limite).
  */
 export function Universe() {
-  const { nodes, rings } = layout();
+  const { placed, ringsUsed, size, showLabels, showLines } = build();
 
   return (
     <section id="universo-prova" className="section-y px-6">
@@ -98,30 +117,33 @@ export function Universe() {
           </Link>
         </div>
 
-        {/* Constelação — escala para N parceiros, cada um é um link */}
+        {/* Constelação elástica */}
         <div className="b-item relative aspect-square w-full max-w-xl mx-auto" style={st(2)}>
           <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full pointer-events-none" aria-hidden>
-            {nodes.map((node, i) => (
-              <line key={i} x1="50" y1="50" x2={node.x} y2={node.y} stroke="var(--line)" strokeWidth="0.25" />
-            ))}
+            {showLines &&
+              placed.map((node, i) => (
+                <line key={i} x1="50" y1="50" x2={node.x} y2={node.y} stroke="var(--line)" strokeWidth="0.25" />
+              ))}
             <g className="animate-spin-slow" style={{ transformOrigin: "50px 50px" }}>
-              {rings.map((r, i) => (
-                <ellipse key={i} cx="50" cy="50" rx={r.rx} ry={r.ry} fill="none" stroke="var(--line)" strokeWidth="0.4" />
+              {ringsUsed.map((r, i) => (
+                <ellipse key={i} cx="50" cy="50" rx={r.r} ry={r.r * RY} fill="none" stroke="var(--line)" strokeWidth="0.4" />
               ))}
             </g>
           </svg>
 
           {/* núcleo QuBit */}
           <div
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full surface-glass-strong [box-shadow:var(--glow-brand-strong)] flex items-center justify-center"
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full surface-glass-strong [box-shadow:var(--glow-brand-strong)] flex items-center justify-center"
             aria-hidden
           >
             <span className="font-sans text-mono-label text-brand-text">QuBit</span>
           </div>
 
           {/* nós */}
-          {nodes.map((node, i) => {
+          {placed.map((node, i) => {
             const pos = { left: `${node.x}%`, top: `${node.y}%` } as React.CSSProperties;
+            const badge: React.CSSProperties = { width: size, height: size };
+
             if (node.kind === "more") {
               return (
                 <Link
@@ -131,20 +153,23 @@ export function Universe() {
                   className="group absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1"
                   style={pos}
                 >
-                  <span className="w-12 h-12 rounded-full surface-glass flex items-center justify-center font-sans text-sm font-medium text-brand-text group-hover:border-brand-text group-hover:[box-shadow:var(--glow-brand)] transition-all">
+                  <span
+                    style={badge}
+                    className="rounded-full surface-glass flex items-center justify-center font-sans font-medium text-brand-text group-hover:border-brand-text group-hover:[box-shadow:var(--glow-brand)] transition-all"
+                  >
                     +{node.count}
                   </span>
-                  <span className="font-sans text-[10px] text-text-3">ver todos</span>
+                  {showLabels && <span className="font-sans text-[10px] text-text-3">ver todos</span>}
                 </Link>
               );
             }
+
             const p = node.partner;
             const external = p.url.startsWith("http");
-            const href = external ? p.url : "/universo";
             return (
               <a
                 key={p.id}
-                href={href}
+                href={external ? p.url : "/universo"}
                 target={external ? "_blank" : undefined}
                 rel={external ? "noopener noreferrer" : undefined}
                 aria-label={`${p.name} — ${p.sector}`}
@@ -152,15 +177,20 @@ export function Universe() {
                 className="group absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1"
                 style={pos}
               >
-                <span className="w-12 h-12 rounded-full surface-glass flex items-center justify-center overflow-hidden group-hover:border-brand-text group-hover:[box-shadow:var(--glow-brand)] transition-all">
+                <span
+                  style={badge}
+                  className="rounded-full surface-glass flex items-center justify-center overflow-hidden group-hover:border-brand-text group-hover:[box-shadow:var(--glow-brand)] transition-all"
+                >
                   {p.logo ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={p.logo} alt="" width={48} height={48} className="w-9 h-9 object-contain" />
+                    <img src={p.logo} alt="" className="w-3/4 h-3/4 object-contain" />
                   ) : (
-                    <span className="font-sans text-sm font-medium text-text-1">{initials(p.name)}</span>
+                    <span className="font-sans font-medium text-text-1" style={{ fontSize: Math.round(size * 0.32) }}>
+                      {initials(p.name)}
+                    </span>
                   )}
                 </span>
-                <span className="font-sans text-[10px] text-text-3 whitespace-nowrap">{p.name}</span>
+                {showLabels && <span className="font-sans text-[10px] text-text-3 whitespace-nowrap">{p.name}</span>}
               </a>
             );
           })}
