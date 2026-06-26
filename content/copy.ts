@@ -135,6 +135,49 @@ export const partnership = {
   ],
 };
 
+// Depoimentos — sem cases reais ainda: estado "em breve" honesto (§ transparência).
+export const depoimentos = {
+  eyebrow: "Depoimentos",
+  h2: "O que os parceiros dizem.",
+  empty: "Em breve — as palavras de quem já cresce com a QuBit.",
+  cta: "Seja um dos primeiros a contar a sua história aqui.",
+};
+
+// "Por que a QuBit" — bloco unificado (consolida problema, solução, incentivos e
+// transparência em chunks escaneáveis; "como funciona" vira mini-passos).
+export const porque = {
+  eyebrow: "Por que a QuBit",
+  h2: "Tecnologia fora do seu caminho. Resultado à vista.",
+  body: "Tudo que separa um site bonito de um negócio que vende — num só lugar, e com os incentivos do seu lado.",
+  reasons: [
+    {
+      id: "ecossistema",
+      icon: "layers",
+      title: "Um ecossistema, não 3 fornecedores",
+      text: "Loja, dados, entrega e anúncios na mesma operação. Nada de peças que não conversam.",
+    },
+    {
+      id: "incentivo",
+      icon: "shield",
+      title: "Crescemos quando você cresce",
+      text: "A rampa de Ads começa em R$ 0; os 5% sobre a mídia alinham nossos incentivos aos seus.",
+    },
+    {
+      id: "dados",
+      icon: "chart",
+      title: "Decisão por dado",
+      text: "Cada página e cada campanha é ajustada pelo que os números mostram — não por achismo.",
+    },
+    {
+      id: "transparencia",
+      icon: "eye",
+      title: "Sem promessa vazia",
+      text: "Dizemos o que entregamos como técnica — e o que não dá para garantir. Honestidade na frente.",
+    },
+  ],
+  stepsLabel: "E como funciona, na prática:",
+};
+
 export const cta_final = {
   h2: "Vamos colocar seu negócio para crescer?",
   sub: "Diagnóstico gratuito, sem compromisso. Respondemos em até 24 horas.", // TODO: SLA real

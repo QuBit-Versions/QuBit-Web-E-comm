@@ -2,12 +2,9 @@ import { Block } from "@/components/ui/Block";
 import { SnapMode } from "@/components/ui/SnapMode";
 import { Hero } from "@/components/home/Hero";
 import { Universe } from "@/components/home/Universe";
-import { Problem } from "@/components/home/Problem";
-import { Solution } from "@/components/home/Solution";
-import { HowItWorks } from "@/components/home/HowItWorks";
+import { Depoimentos } from "@/components/home/Depoimentos";
+import { PorQue } from "@/components/home/PorQue";
 import { Modules } from "@/components/home/Modules";
-import { Transparency } from "@/components/home/Transparency";
-import { Partnership } from "@/components/home/Partnership";
 import { Faq } from "@/components/home/Faq";
 import { FinalCta } from "@/components/home/FinalCta";
 
@@ -20,12 +17,9 @@ export default function Home() {
       <SnapMode />
       <Block><Hero /></Block>
       <Block><Universe /></Block>
-      <Block><Problem /></Block>
-      <Block><Solution /></Block>
-      <Block><HowItWorks /></Block>
+      <Block><Depoimentos /></Block>
+      <Block><PorQue /></Block>
       <Block><Modules /></Block>
-      <Block><Transparency /></Block>
-      <Block><Partnership /></Block>
       <Block><Faq /></Block>
       <Block><FinalCta /></Block>
     </main>
