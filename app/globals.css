@@ -1,26 +1,300 @@
 @import "tailwindcss";
+@import "../styles/tokens.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  /* Cores → utilitários Tailwind: bg-ink, text-paper, border-brand, etc. */
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-brand: var(--brand);
+  --color-brand-text: var(--brand-text);
+  --color-text-1: var(--text-1);
+  --color-text-2: var(--text-2);
+  --color-text-3: var(--text-3);
+  --color-success: var(--success);
+  --color-success-strong: var(--success-strong);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-whatsapp: var(--whatsapp);
+  --color-line: var(--line);
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  /* Fontes */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Raio → rounded-sm, rounded-md-brand, etc. */
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
+  --radius-xl: var(--r-xl);
+  --radius-2xl: var(--r-2xl);
+  --radius-pill: var(--r-pill);
+
+  /* Transições */
+  --ease-brand: var(--ease);
+  --duration-fast: var(--dur-fast);
+  --duration-DEFAULT: var(--dur);
+  --duration-slow: var(--dur-slow);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Base */
+html {
+  color-scheme: dark;
+}
+
+/* Sistema de duas fontes por tamanho (modelo Arthemys):
+   textos MENORES (corpo) em serif Didone; títulos GRANDES em pixel/bitmap. */
+body {
+  background-color: var(--ink);
+  color: var(--text-1);
+  font-family: var(--font-display-serif), Georgia, "Times New Roman", serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Foco visível global */
+:focus-visible {
+  outline: 2px solid var(--brand-text);
+  outline-offset: 2px;
+}
+
+/* Tipografia display "mista" (Arthemys-like): serif Didone + pixel por letra */
+.font-serif-display {
+  font-family: var(--font-display-serif), Georgia, "Times New Roman", serif;
+}
+.font-bitmap {
+  font-family: var(--font-display-bitmap), ui-monospace, monospace;
+}
+
+/* Tipografia fluida — títulos GRANDES em pixel/bitmap (fonte de bits) */
+.text-display {
+  font-family: var(--font-display-bitmap), ui-monospace, monospace;
+  font-size: clamp(2.5rem, 5vw + 1rem, 4.5rem);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+
+.text-h1 {
+  font-family: var(--font-display-bitmap), ui-monospace, monospace;
+  font-size: clamp(2rem, 3vw + 0.75rem, 3rem);
+  font-weight: 500;
+  line-height: 1.1;
+}
+
+.text-h2 {
+  font-family: var(--font-display-bitmap), ui-monospace, monospace;
+  font-size: clamp(1.5rem, 2vw + 0.5rem, 2.25rem);
+  font-weight: 500;
+  line-height: 1.15;
+}
+
+.text-h3 {
+  font-size: clamp(1.2rem, 1.5vw + 0.25rem, 1.5rem);
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.text-body-lg {
+  font-size: 1.125rem;
+  line-height: 1.6;
+}
+
+/* Eyebrow/label técnica em mono. SEM uppercase: a regra de marca é sentence case
+   em todo lugar exceto o logo (§3.3). O tom técnico vem da fonte mono + tracking. */
+.text-mono-label {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+/* Ritmo de seção — §3.4: 64–80px mobile, 96–128px desktop */
+.section-y {
+  padding-top: clamp(4rem, 8vw, 8rem);    /* 64px → 128px */
+  padding-bottom: clamp(4rem, 8vw, 8rem);
+}
+
+/* Gradiente de texto — só display/arte */
+.text-gradient {
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Identidade "Aurora Glass" — utilitários de superfície ──────────────────
+   Vidro translúcido sobre o fundo de partículas, com brilho aurora interno.
+   Substitui os fundos chapados das seções por superfícies com profundidade. */
+.surface-glass {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+}
+
+.surface-glass-strong {
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+}
+
+/* Brilho aurora interno (o "inner shadow" luminoso das referências) */
+.glow-aurora {
+  box-shadow: var(--glow-aurora-inset);
+}
+
+/* Halo da marca — reservado ao CTA primário */
+.glow-brand {
+  box-shadow: var(--glow-brand);
+}
+
+/* Sem backdrop-filter (navegadores antigos) → cai para fundo mais opaco */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .surface-glass,
+  .surface-glass-strong {
+    background: var(--surface-1);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ── Scrollytelling: blocos full-screen com snap nativo ────────────────────
+   Cada bloco ocupa a tela e o scroll "encaixa" no bloco. O snap só liga nas
+   rotas marcadas com .snap-page (home + telas curtas), mantendo o scroll da
+   janela (e o warp das partículas). Acessível: proximity não prende o usuário. */
+html.snap-page {
+  scroll-snap-type: y mandatory;
+}
+/* Modo suave (proximity): encaixa, mas nunca prende o scroll — p/ páginas com
+   blocos mais altos (ex.: /servicos). */
+html.snap-page-soft {
+  scroll-snap-type: y proximity;
+}
+.snap-block {
+  scroll-snap-align: start;
+}
+html.snap-page .snap-block {
+  scroll-snap-stop: always; /* na home, encaixa firme, um bloco por vez */
+}
+
+/* Itens que entram em CASCATA quando o bloco fica ativo (data-active=true) e
+   REVERTEM ao sair — usa transition (não keyframe) → reversível automático.
+   O índice de cascata vem de --i (definido por elemento). */
+.b-item {
+  opacity: 0;
+  transform: translateY(34px) scale(0.985);
+  filter: blur(6px);
+  transition: opacity 0.6s var(--ease), transform 0.7s var(--ease), filter 0.6s var(--ease);
+  transition-delay: calc(var(--i, 0) * 90ms);
+  will-change: opacity, transform, filter;
+}
+[data-active="true"] .b-item {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+/* Cards "se espalhando" do centro pras posições: cada card vem do seu lado
+   (--dir: -1 esquerda, +1 direita, 0 centro) → entrada convergente (<->). */
+.b-spread {
+  opacity: 0;
+  transform: translateX(calc(var(--dir, 0) * 90px)) translateY(36px) scale(0.92);
+  transition: opacity 0.6s var(--ease), transform 0.9s var(--ease);
+  transition-delay: calc(var(--i, 0) * 120ms);
+  will-change: opacity, transform;
+}
+[data-active="true"] .b-spread {
+  opacity: 1;
+  transform: none;
+}
+
+/* Letras que surgem e se emparelham: metade vem da esquerda, metade da direita,
+   convergindo até formar a palavra (--dir por caractere). */
+.b-char {
+  display: inline-block;
+  white-space: pre;
+  opacity: 0;
+  transform: translateX(calc(var(--dir, 0) * 0.7em)) translateY(0.3em) rotate(calc(var(--dir, 0) * 7deg));
+  transition: opacity 0.5s var(--ease), transform 0.6s var(--ease);
+  transition-delay: calc(var(--i, 0) * 26ms);
+  will-change: opacity, transform;
+}
+[data-active="true"] .b-char {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.snap-page { scroll-snap-type: none; }
+  .b-item, .b-spread, .b-char {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+  }
+}
+
+/* Reveal de seções ao entrar na viewport */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+  will-change: opacity, transform;
+}
+
+.reveal[data-visible="true"] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Polvo vivo: cromatóforos cintilando + olhos piscando (a ONDULAÇÃO por pixel
+   é feita em JS no OctopusMark — onda viajando pelos tentáculos, não bloco rígido). */
+.oct-shimmer {
+  transition: fill 0.7s var(--ease);
+}
+.oct-eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: oct-blink 5.5s ease-in-out infinite;
+}
+@keyframes oct-blink {
+  0%, 93%, 100% { transform: scaleY(1); }
+  96.5% { transform: scaleY(0.1); }
+}
+
+/* Marca-herói: polvo flutuando + órbita do fóton girando devagar */
+@keyframes float-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+.animate-float {
+  animation: float-bob 6s ease-in-out infinite;
+}
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+  animation: spin-slow 48s linear infinite;
+  transform-origin: center;
+}
+
+/* Microinteração de brilho no CTA primário */
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand) 45%, transparent); }
+  70% { box-shadow: 0 0 0 12px color-mix(in srgb, var(--brand) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand) 0%, transparent); }
+}
+
+/* Reduzir movimento */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  /* Reveal sempre visível, sem deslocamento */
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
 }

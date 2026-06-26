@@ -1,0 +1,87 @@
+:root {
+  /* Neutros — ~90% da tela */
+  --ink: #141312;
+  --paper: #EDE8DC;
+  --surface-1: #1B1A18;
+  --surface-2: #232220;
+  --line: rgba(237, 232, 220, 0.14);
+
+  /* Marca / ação */
+  --brand: #2B4DFF;
+  --brand-text: #8AA0FF;
+
+  /* Gradiente "energia" — só em fills/arte/universo */
+  --grad: linear-gradient(135deg, #1B2CC8, #2B4DFF, #6C3BFF, #C42BD6, #FF3D6E);
+  --g-1: #1B2CC8;
+  --g-2: #2B4DFF;
+  --g-3: #6C3BFF;
+  --g-4: #C42BD6;
+  --g-5: #FF3D6E;
+
+  /* Texto sobre fundo escuro */
+  --text-1: #EDE8DC;   /* 15.18:1 AAA */
+  --text-2: #A8A299;   /* 7.33:1  AAA */
+  --text-3: #8C877E;   /* ~5.2:1  AA p/ texto pequeno (era 4.34, falhava) */
+
+  /* Semânticas */
+  --success: #1D9E75;
+  --success-strong: #5DCAA5;
+  --warning: #EF9F27;
+  --danger: #FF3D6E;
+  --info: #2B4DFF;
+
+  /* Canal externo — verde oficial do WhatsApp (não é cor de marca QuBit) */
+  --whatsapp: #25D366;
+
+  /* Raio */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-xl: 24px;
+  --r-2xl: 32px;
+  --r-pill: 999px;
+
+  /* ── Sistema espacial 8pt (base 4) ──────────────────────────────────────
+     Escala em múltiplos de 8 com meio-passo de 4 (padrão Material/Apple).
+     Use SEMPRE estes degraus — nunca valores avulsos. */
+  --sp: 4px;       /* base */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+  --sp-8: 64px;
+  --sp-9: 96px;
+  --sp-10: 128px;
+
+  /* ── Escala tipográfica modular (Quarta Perfeita ~1.333) ────────────────
+     Hierarquia matemática; valores fluidos vivem nas classes .text-* . */
+  --type-ratio: 1.333;
+
+  /* ── Identidade "Aurora Glass" — superfícies de vidro + brilho aurora ───
+     Translúcido sobre o fundo de partículas, com luz interna azul/violeta. */
+  --glass-bg: color-mix(in srgb, var(--surface-1) 58%, transparent);
+  --glass-bg-strong: color-mix(in srgb, var(--surface-2) 72%, transparent);
+  --glass-border: color-mix(in srgb, var(--paper) 12%, transparent);
+  --glass-blur: 16px;
+
+  /* Brilho da marca (halo do CTA) e brilho aurora (inner-glow das refs) */
+  --glow-brand: 0 0 24px -2px color-mix(in srgb, var(--brand) 55%, transparent);
+  --glow-brand-strong: 0 0 36px -4px color-mix(in srgb, var(--brand) 70%, transparent),
+                       0 0 0 1px color-mix(in srgb, var(--brand) 35%, transparent);
+  --glow-aurora-inset: inset 0 30px 90px -40px color-mix(in srgb, var(--g-3) 65%, transparent),
+                       inset 0 -24px 80px -50px color-mix(in srgb, var(--g-2) 55%, transparent);
+
+  /* Elevação (sombra física para cards/flutuantes) */
+  --elev-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --elev-2: 0 12px 40px -16px rgba(0, 0, 0, 0.65);
+  --elev-3: 0 24px 70px -24px rgba(0, 0, 0, 0.7);
+
+  /* Motion */
+  --dur-fast: 120ms;
+  --dur: 200ms;
+  --dur-slow: 420ms;
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}

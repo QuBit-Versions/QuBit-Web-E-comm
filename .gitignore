@@ -30,8 +30,16 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files (segredos locais) — mas mantém o exemplo versionado
 .env*
+!.env.example
+
+# config local de MCP (caminhos da máquina, não faz parte do site)
+.mcp.json
+
+# backups de assets
+*.glb.bak
+*.v4bak
 
 # vercel
 .vercel
