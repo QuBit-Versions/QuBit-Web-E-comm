@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { Partner } from "@/content/partners";
 import { UniverseFallback } from "./UniverseFallback";
 
 /**
@@ -9,7 +10,7 @@ import { UniverseFallback } from "./UniverseFallback";
  * os links visíveis, então o fallback fica `sr-only`. Sem WebGL (ou antes do
  * mount), ele aparece visível — nunca um vácuo.
  */
-export function UniverseFallbackGate() {
+export function UniverseFallbackGate({ partners = [] }: { partners?: Partner[] }) {
   const [webgl, setWebgl] = useState(false);
 
   useEffect(() => {
@@ -26,5 +27,5 @@ export function UniverseFallbackGate() {
     }
   }, []);
 
-  return <UniverseFallback className={webgl ? "sr-only" : "py-12 pointer-events-auto"} />;
+  return <UniverseFallback partners={partners} className={webgl ? "sr-only" : "py-12 pointer-events-auto"} />;
 }

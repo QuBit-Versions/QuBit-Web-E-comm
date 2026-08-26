@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { partners, type Partner } from "@/content/partners";
+import { ArrowRight, Plus } from "lucide-react";
+import type { Partner } from "@/content/partners";
+import { getOrbitPartners } from "@/lib/orbita";
 import { Wordmark } from "@/components/brand/Wordmark";
 
 const st = (i: number, dir = 0) => ({ ["--i" as string]: i, ["--dir" as string]: dir } as React.CSSProperties);
@@ -22,7 +23,10 @@ function ringCount(total: number) {
   return total <= 7 ? 1 : total <= 16 ? 2 : total <= 28 ? 3 : 4;
 }
 
-type Item = { kind: "partner"; partner: Partner } | { kind: "more"; count: number };
+type Item =
+  | { kind: "partner"; partner: Partner }
+  | { kind: "more"; count: number }
+  | { kind: "invite" };
 type Placed = Item & { x: number; y: number };
 
 // Escolhe quantos anéis e distribui os nós de forma BALANCEADA (proporcional ao
@@ -40,11 +44,13 @@ function chooseRings(total: number) {
   return rings.map((r, i) => ({ r: r.r, count: counts[i], start: -90 + i * 25 }));
 }
 
-function build() {
+function build(partners: Partner[]) {
   const overflow = partners.length > MAX ? partners.length - (MAX - 1) : 0;
   const shown = partners.slice(0, overflow > 0 ? MAX - 1 : Math.min(partners.length, MAX));
   const items: Item[] = shown.map((partner) => ({ kind: "partner", partner }));
   if (overflow > 0) items.push({ kind: "more", count: overflow });
+  // Poucos parceiros → um nó-convite completa a constelação (nunca um vácuo).
+  if (overflow === 0 && shown.length <= 2) items.push({ kind: "invite" });
   const total = items.length;
 
   const ringsUsed = chooseRings(total);
@@ -74,13 +80,16 @@ function initials(name: string) {
 }
 
 /**
- * Prova social = o universo QuBit (2º bloco). F-pattern, chunking, hierarquia e
- * white space. Cada parceiro é um LINK (logo ou iniciais). A constelação se
- * AUTOAJUSTA ao número de parceiros (1–4 anéis, nós menores conforme cresce) até
- * ~43; além disso, um nó "+N" leva ao /universo (3D sem limite).
+ * Prova social = o universo QuBit (2º bloco). Os parceiros vêm do BANCO
+ * (empresas em órbita com logo). Cada parceiro é um LINK para o site dele
+ * (logo ou iniciais). A constelação se AUTOAJUSTA ao número de parceiros
+ * (1–4 anéis, nós menores conforme cresce) até ~43; além disso, um nó "+N"
+ * leva ao /universo (3D sem limite).
  */
-export function Universe() {
-  const { placed, ringsUsed, size, showLabels, showLines } = build();
+export async function Universe() {
+  const partners = await getOrbitPartners();
+  const { placed, ringsUsed, size, showLabels, showLines } = build(partners);
+  const nSectors = new Set(partners.map((p) => p.sector)).size;
 
   return (
     <section id="universo-prova" className="section-y px-6">
@@ -92,19 +101,20 @@ export function Universe() {
             Empresas que já orbitam a QuBit.
           </h2>
           <p className="b-item text-body-lg text-text-2 mb-10 max-w-md" style={st(2)}>
-            Cada planeta é um negócio que cresce com a gente — de moda a educação.
+            Cada planeta é um negócio que cresce com a gente.
           </p>
 
           <div className="b-item flex gap-10 mb-10" style={st(3)}>
             <div>
-              <p className="font-sans text-3xl font-medium text-text-1">{partners.length}+</p>
-              <p className="text-sm text-text-3">negócios em órbita</p>
+              <p className="font-sans text-3xl font-medium text-text-1">
+                {partners.length}
+                {partners.length >= 8 ? "+" : ""}
+              </p>
+              <p className="text-sm text-text-3">{partners.length === 1 ? "negócio em órbita" : "negócios em órbita"}</p>
             </div>
             <div>
-              <p className="font-sans text-3xl font-medium text-text-1">
-                {new Set(partners.map((p) => p.sector)).size}
-              </p>
-              <p className="text-sm text-text-3">setores diferentes</p>
+              <p className="font-sans text-3xl font-medium text-text-1">{nSectors}</p>
+              <p className="text-sm text-text-3">{nSectors === 1 ? "setor" : "setores diferentes"}</p>
             </div>
           </div>
 
@@ -161,6 +171,27 @@ export function Universe() {
                     +{node.count}
                   </span>
                   {showLabels && <span className="font-sans text-[10px] text-text-3">ver todos</span>}
+                </Link>
+              );
+            }
+
+            if (node.kind === "invite") {
+              return (
+                <Link
+                  key={`invite-${i}`}
+                  href="/diagnostico"
+                  aria-label="Sua marca pode orbitar aqui — agende um diagnóstico"
+                  title="Sua marca pode orbitar aqui"
+                  className="group absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1"
+                  style={pos}
+                >
+                  <span
+                    style={badge}
+                    className="rounded-full border border-dashed border-brand/40 bg-brand/5 flex items-center justify-center text-brand-text group-hover:border-brand/70 group-hover:[box-shadow:var(--glow-brand)] transition-all"
+                  >
+                    <Plus className="w-1/3 h-1/3" aria-hidden />
+                  </span>
+                  {showLabels && <span className="font-sans text-[10px] text-text-3 whitespace-nowrap">sua marca aqui</span>}
                 </Link>
               );
             }

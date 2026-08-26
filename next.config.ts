@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Build autocontido para Docker/Cloud Run (gera .next/standalone/server.js).
+  output: "standalone",
 };
 
 export default nextConfig;

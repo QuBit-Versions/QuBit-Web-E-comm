@@ -3,27 +3,10 @@ export type Partner = {
   name: string;
   sector: string;
   url: string;
-  logo?: string; // TODO: substituir pelos logos reais
+  logo?: string;
 };
 
-// TODO: substituir por parceiros reais com logos e URLs definitivos
-export const partners: Partner[] = [
-  { id: "veran",    name: "Verán Moda",       sector: "Moda",            url: "#" },
-  { id: "nutri",    name: "NutriPeak",         sector: "Suplementos",     url: "#" },
-  { id: "pata",     name: "Patapronto",        sector: "Petshop",         url: "#" },
-  { id: "voltz",    name: "Voltz",             sector: "Eletrônicos",     url: "#" },
-  { id: "lavi",     name: "Lavï Cosméticos",   sector: "Beleza",          url: "#" },
-  { id: "grao",     name: "Grão Nobre",        sector: "Café & Alimentos",url: "#" },
-  { id: "papel",    name: "Papel&Co",          sector: "Papelaria",       url: "#" },
-  { id: "lumen",    name: "Casa Lúmen",        sector: "Casa & Decoração", url: "#" },
-  { id: "proforma", name: "ProForma Fit",      sector: "Fitness",         url: "#" },
-  { id: "mentor",   name: "Mentor Lab",        sector: "Educação",        url: "#" },
-  { id: "aurora",   name: "Aurora Joias",      sector: "Acessórios",      url: "#" },
-  { id: "verde",    name: "Verde Vida",        sector: "Saúde",           url: "#" },
-  { id: "tropic",   name: "Tropic Surf",       sector: "Esporte",         url: "#" },
-  { id: "bambu",    name: "Bambu Kids",        sector: "Infantil",        url: "#" },
-  { id: "forno",    name: "Forno & Brasa",     sector: "Café & Alimentos",url: "#" },
-  { id: "pixel",    name: "Pixel Games",       sector: "Eletrônicos",     url: "#" },
-  { id: "luz",      name: "Luz Cosméticos",    sector: "Beleza",          url: "#" },
-  { id: "raiz",     name: "Raiz Natural",      sector: "Suplementos",     url: "#" },
-];
+// Os parceiros agora vêm do BANCO (empresas com em_orbita + logo_url):
+// - servidor: lib/orbita.ts (getOrbitPartners)
+// - cliente:  GET /api/orbita
+// Este arquivo mantém apenas o tipo compartilhado.

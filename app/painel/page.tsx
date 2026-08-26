@@ -1,17 +1,21 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Briefcase, MapPin, Phone, Mail, ShieldCheck, Building2 } from "lucide-react";
-import { createSupabaseServer } from "@/lib/supabaseServer";
+import { Briefcase, MapPin, Phone, Mail, ShieldCheck, Building2, ImagePlus, CheckCircle2, CircleDashed, Loader2, Package, FileText, ExternalLink } from "lucide-react";
+import sql from "@/lib/db";
+import { getEmpresaLogada } from "@/lib/auth";
 import { LogoutButton } from "@/components/auth/LogoutButton";
+import { EntregasAdmin, type EntregaItem } from "@/components/painel/EntregasAdmin";
 import { LogoUpload } from "@/components/painel/LogoUpload";
 import { NovaDemandaForm } from "@/components/painel/NovaDemandaForm";
+import { OrbitaControls } from "@/components/painel/OrbitaControls";
 import { StatusSelect } from "@/components/painel/StatusSelect";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { areas } from "@/lib/auth-validation";
 import { services } from "@/content/services";
 
 export const metadata: Metadata = { title: "Painel — QuBit", robots: { index: false } };
+export const dynamic = "force-dynamic";
 
 const STATUS: Record<string, { label: string; cls: string }> = {
   nova: { label: "Nova", cls: "bg-brand/15 text-brand-text border-brand/30" },
@@ -21,7 +25,8 @@ const STATUS: Record<string, { label: string; cls: string }> = {
 };
 
 const areaLabel = (v?: string | null) => areas.find((a) => a.value === v)?.label ?? v ?? "—";
-const fmt = (d: string) => new Date(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
+const fmt = (d: Date | string) =>
+  new Date(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
 
 function StatusBadge({ status }: { status: string }) {
   const s = STATUS[status] ?? STATUS.nova;
@@ -30,16 +35,27 @@ function StatusBadge({ status }: { status: string }) {
 
 type Demanda = {
   id: string;
-  created_at: string;
+  created_at: Date;
   titulo: string;
   descricao: string | null;
   status: string;
-  profiles?: { nome_fantasia: string | null; area: string | null; regiao: string | null } | null;
+  empresa_nome?: string | null;
+  empresa_area?: string | null;
+  empresa_regiao?: string | null;
+};
+
+type Entrega = {
+  id: string;
+  empresa_id: string;
+  titulo: string;
+  descricao: string | null;
+  status: "planejada" | "em_andamento" | "entregue";
+  entregue_em: Date | null;
 };
 
 type Empresa = {
   id: string;
-  created_at: string;
+  created_at: Date;
   nome_fantasia: string | null;
   cnpj: string | null;
   responsavel: string | null;
@@ -48,63 +64,80 @@ type Empresa = {
   telefone: string | null;
   email: string | null;
   logo_url: string | null;
+  em_orbita: boolean;
+  logo_solicitada_em: Date | null;
+  site_url: string | null;
 };
 
 export default async function PainelPage() {
-  const supabase = await createSupabaseServer();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/entrar");
+  const eu = await getEmpresaLogada();
+  if (!eu) redirect("/entrar");
+  const isAdmin = eu.role === "admin";
 
-  const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
-  const isAdmin = profile?.role === "admin";
-
-  // Semente: serviços escolhidos no cadastro viram a 1ª demanda no primeiro login.
-  // Só roda para empresa, uma única vez (limpa o metadata depois de garantir a demanda).
-  if (!isAdmin) {
-    const interesses = (user.user_metadata?.interesses ?? []) as string[];
-    if (interesses.length > 0) {
-      const { count } = await supabase
-        .from("demandas")
-        .select("id", { count: "exact", head: true })
-        .eq("empresa_id", user.id);
-      let seeded = (count ?? 0) > 0;
-      if (!seeded) {
-        const nomes = interesses
-          .map((id) => services.find((s) => s.id === id)?.name)
-          .filter((n): n is string => Boolean(n));
-        const { error } = await supabase.from("demandas").insert({
-          empresa_id: user.id,
-          titulo: "Soluções de interesse",
-          descricao: nomes.length ? `Selecionadas no cadastro: ${nomes.join(", ")}.` : null,
-          interesses,
-        });
-        seeded = !error;
+  // Semente: serviços escolhidos no cadastro viram a 1ª demanda no primeiro acesso.
+  if (!isAdmin && (eu.interesses_pendentes?.length ?? 0) > 0) {
+    const interesses = eu.interesses_pendentes as string[];
+    const [{ count }] = await sql<{ count: number }[]>`
+      select count(*)::int as count from demandas where empresa_id = ${eu.id}`;
+    let seeded = count > 0;
+    if (!seeded) {
+      const nomes = interesses
+        .map((id) => services.find((s) => s.id === id)?.name)
+        .filter((n): n is string => Boolean(n));
+      try {
+        await sql`
+          insert into demandas (empresa_id, titulo, descricao, interesses)
+          values (${eu.id}, ${"Soluções de interesse"},
+                  ${nomes.length ? `Selecionadas no cadastro: ${nomes.join(", ")}.` : null},
+                  ${interesses})`;
+        seeded = true;
+      } catch {
+        seeded = false;
       }
-      if (seeded) await supabase.auth.updateUser({ data: { interesses: [] } });
     }
+    if (seeded) await sql`update empresas set interesses_pendentes = null where id = ${eu.id}`;
   }
 
-  const { data: demandas } = isAdmin
-    ? await supabase
-        .from("demandas")
-        .select("*, profiles(nome_fantasia, area, regiao)")
-        .order("created_at", { ascending: false })
-    : await supabase.from("demandas").select("*").eq("empresa_id", user.id).order("created_at", { ascending: false });
-
-  const lista = (demandas ?? []) as Demanda[];
+  const lista = isAdmin
+    ? await sql<Demanda[]>`
+        select d.id, d.created_at, d.titulo, d.descricao, d.status,
+               e.nome_fantasia as empresa_nome, e.area as empresa_area, e.regiao as empresa_regiao
+          from demandas d
+          join empresas e on e.id = d.empresa_id
+         order by d.created_at desc`
+    : await sql<Demanda[]>`
+        select id, created_at, titulo, descricao, status
+          from demandas
+         where empresa_id = ${eu.id}
+         order by created_at desc`;
 
   // Admin: todas as empresas cadastradas (mesmo as sem demanda).
   const empresas = isAdmin
-    ? (((
-        await supabase
-          .from("profiles")
-          .select("*")
-          .eq("role", "empresa")
-          .order("created_at", { ascending: false })
-      ).data ?? []) as Empresa[])
+    ? await sql<Empresa[]>`
+        select id, created_at, nome_fantasia, cnpj, responsavel, area, regiao, telefone, email, logo_url,
+               em_orbita, logo_solicitada_em, site_url
+          from empresas
+         where role = 'empresa'
+         order by created_at desc`
     : [];
+
+  // Entregas: admin vê/gerencia todas (agrupadas por empresa); empresa acompanha as suas.
+  const entregas = isAdmin
+    ? await sql<Entrega[]>`
+        select id, empresa_id, titulo, descricao, status, entregue_em
+          from entregas order by created_at asc`
+    : await sql<Entrega[]>`
+        select id, empresa_id, titulo, descricao, status, entregue_em
+          from entregas where empresa_id = ${eu.id} order by created_at asc`;
+  const entregasPorEmpresa = new Map<string, Entrega[]>();
+  for (const ent of entregas) {
+    const list = entregasPorEmpresa.get(ent.empresa_id) ?? [];
+    list.push(ent);
+    entregasPorEmpresa.set(ent.empresa_id, list);
+  }
+  const minhasEntregues = entregas.filter((e) => e.status === "entregue");
+  const minhasAndamento = entregas.filter((e) => e.status === "em_andamento");
+  const minhasPlanejadas = entregas.filter((e) => e.status === "planejada");
 
   return (
     <main id="main-content" className="min-h-screen pt-28 pb-20 px-6">
@@ -178,6 +211,17 @@ export default async function PainelPage() {
                       )}
                     </div>
                   </dl>
+                  <OrbitaControls
+                    empresaId={e.id}
+                    emOrbita={e.em_orbita}
+                    temLogo={!!e.logo_url}
+                    logoSolicitada={!!e.logo_solicitada_em}
+                    siteUrl={e.site_url ?? ""}
+                  />
+                  <EntregasAdmin
+                    empresaId={e.id}
+                    entregas={(entregasPorEmpresa.get(e.id) ?? []) as EntregaItem[]}
+                  />
                 </div>
               ))}
               {empresas.length === 0 && <p className="text-text-3">Nenhuma empresa cadastrada ainda.</p>}
@@ -198,7 +242,7 @@ export default async function PainelPage() {
                     </div>
                     {d.descricao && <p className="text-text-2 text-sm mb-2">{d.descricao}</p>}
                     <p className="font-sans text-xs text-text-3">
-                      {d.profiles?.nome_fantasia ?? "—"} · {areaLabel(d.profiles?.area)} · {d.profiles?.regiao ?? "—"}
+                      {d.empresa_nome ?? "—"} · {areaLabel(d.empresa_area)} · {d.empresa_regiao ?? "—"}
                     </p>
                   </div>
                   <span className="font-sans text-xs text-text-3 shrink-0">{fmt(d.created_at)}</span>
@@ -210,23 +254,125 @@ export default async function PainelPage() {
         ) : (
           /* ── Empresa: perfil + nova demanda + suas demandas ── */
           <>
-            <h1 className="text-h1 text-text-1 mb-8">Olá, {profile?.nome_fantasia || "parceiro"}.</h1>
+            <h1 className="text-h1 text-text-1 mb-8">Olá, {eu.nome_fantasia || "parceiro"}.</h1>
+
+            {/* A QuBit pediu a logo — some sozinho assim que ela for enviada */}
+            {eu.logo_solicitada_em && !eu.logo_url && (
+              <div
+                role="status"
+                className="flex items-start gap-3 p-5 mb-6 rounded-2xl border border-brand/40 bg-brand/5"
+              >
+                <ImagePlus className="w-5 h-5 text-brand-text shrink-0 mt-0.5" aria-hidden />
+                <div>
+                  <p className="text-text-1 font-medium">A QuBit solicitou a logo da sua empresa.</p>
+                  <p className="text-sm text-text-2 mt-0.5">
+                    Envie no botão ao lado do seu perfil, logo abaixo — assim que chegar, sua marca entra na órbita do
+                    site da QuBit automaticamente.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Perfil */}
             <div className="surface-glass glow-aurora rounded-2xl p-6 md:p-8 mb-10 grid md:grid-cols-[1fr_auto] gap-8 items-center">
               <div className="grid sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
-                <p className="flex items-center gap-2 text-text-2"><Briefcase className="w-4 h-4 text-text-3" aria-hidden /> {areaLabel(profile?.area)}</p>
-                <p className="flex items-center gap-2 text-text-2"><MapPin className="w-4 h-4 text-text-3" aria-hidden /> {profile?.regiao ?? "—"}</p>
-                <p className="flex items-center gap-2 text-text-2"><Phone className="w-4 h-4 text-text-3" aria-hidden /> {profile?.telefone ?? "—"}</p>
-                <p className="flex items-center gap-2 text-text-2"><Mail className="w-4 h-4 text-text-3" aria-hidden /> {profile?.email ?? "—"}</p>
+                <p className="flex items-center gap-2 text-text-2"><Briefcase className="w-4 h-4 text-text-3" aria-hidden /> {areaLabel(eu.area)}</p>
+                <p className="flex items-center gap-2 text-text-2"><MapPin className="w-4 h-4 text-text-3" aria-hidden /> {eu.regiao ?? "—"}</p>
+                <p className="flex items-center gap-2 text-text-2"><Phone className="w-4 h-4 text-text-3" aria-hidden /> {eu.telefone ?? "—"}</p>
+                <p className="flex items-center gap-2 text-text-2"><Mail className="w-4 h-4 text-text-3" aria-hidden /> {eu.email ?? "—"}</p>
               </div>
-              <LogoUpload userId={user.id} logoUrl={profile?.logo_url} />
+              <LogoUpload logoUrl={eu.logo_url} />
             </div>
+
+            {/* Contrato — espaço permanente; o arquivo é incluído pelo admin */}
+            <section aria-label="Contrato" className="surface-glass rounded-2xl p-5 mb-10 flex items-center gap-3">
+              <FileText className="w-5 h-5 text-brand-text shrink-0" aria-hidden />
+              {eu.contrato_url ? (
+                <>
+                  <div className="min-w-0">
+                    <p className="text-text-1 font-medium">Contrato de prestação de serviços</p>
+                    <p className="font-sans text-xs text-text-3">Documento firmado entre sua empresa e a QuBit.</p>
+                  </div>
+                  <a
+                    href={eu.contrato_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-sans ml-auto inline-flex items-center gap-1.5 text-sm text-brand-text hover:underline shrink-0 min-h-11"
+                  >
+                    Ver contrato <ExternalLink className="w-3.5 h-3.5" aria-hidden />
+                  </a>
+                </>
+              ) : (
+                <div>
+                  <p className="text-text-1 font-medium">Contrato</p>
+                  <p className="font-sans text-xs text-text-3">Seu contrato será disponibilizado aqui.</p>
+                </div>
+              )}
+            </section>
+
+            {/* Acompanhamento do projeto — o que a QuBit já entregou e o que vem aí */}
+            {entregas.length > 0 && (
+              <section aria-label="Acompanhamento do projeto" className="mb-12">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-h2 text-text-1 flex items-center gap-2">
+                    <Package className="w-6 h-6 text-brand-text" aria-hidden /> Acompanhamento do projeto
+                  </h2>
+                  <span className="font-sans text-sm text-text-2">
+                    {minhasEntregues.length} de {entregas.length} {entregas.length === 1 ? "entrega" : "entregas"}
+                  </span>
+                </div>
+
+                {/* progresso */}
+                <div className="h-1.5 rounded-full bg-surface-2 overflow-hidden mb-8" role="progressbar"
+                  aria-valuenow={minhasEntregues.length} aria-valuemin={0} aria-valuemax={entregas.length}
+                  aria-label="Progresso das entregas">
+                  <div
+                    className="h-full rounded-full bg-brand transition-all"
+                    style={{ width: `${entregas.length ? Math.round((minhasEntregues.length / entregas.length) * 100) : 0}%` }}
+                  />
+                </div>
+
+                <div className="grid gap-3">
+                  {minhasAndamento.map((e) => (
+                    <div key={e.id} className="surface-glass rounded-2xl p-5 flex items-start gap-3 border-warning/30">
+                      <Loader2 className="w-5 h-5 text-warning shrink-0 mt-0.5" aria-hidden />
+                      <div>
+                        <p className="text-text-1 font-medium">{e.titulo}</p>
+                        <p className="font-sans text-xs text-warning mt-0.5">sendo feito agora</p>
+                        {e.descricao && <p className="text-sm text-text-2 mt-1">{e.descricao}</p>}
+                      </div>
+                    </div>
+                  ))}
+                  {minhasPlanejadas.map((e) => (
+                    <div key={e.id} className="surface-glass rounded-2xl p-5 flex items-start gap-3">
+                      <CircleDashed className="w-5 h-5 text-text-3 shrink-0 mt-0.5" aria-hidden />
+                      <div>
+                        <p className="text-text-1 font-medium">{e.titulo}</p>
+                        <p className="font-sans text-xs text-text-3 mt-0.5">próxima entrega</p>
+                        {e.descricao && <p className="text-sm text-text-2 mt-1">{e.descricao}</p>}
+                      </div>
+                    </div>
+                  ))}
+                  {minhasEntregues.map((e) => (
+                    <div key={e.id} className="surface-glass rounded-2xl p-5 flex items-start gap-3 opacity-90">
+                      <CheckCircle2 className="w-5 h-5 text-success-strong shrink-0 mt-0.5" aria-hidden />
+                      <div>
+                        <p className="text-text-1 font-medium">{e.titulo}</p>
+                        <p className="font-sans text-xs text-success-strong mt-0.5">
+                          entregue{e.entregue_em ? ` em ${fmt(e.entregue_em)}` : ""}
+                        </p>
+                        {e.descricao && <p className="text-sm text-text-2 mt-1">{e.descricao}</p>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* Nova demanda */}
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-h2 text-text-1">Suas demandas</h2>
-              <NovaDemandaForm userId={user.id} />
+              <NovaDemandaForm />
             </div>
 
             <div className="grid gap-4">

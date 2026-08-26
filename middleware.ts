@@ -1,44 +1,21 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { createServerClient } from "@supabase/ssr";
 
 /**
- * Renova a sessão do Supabase nos cookies e protege a área logada (/painel):
- * sem usuário autenticado → redireciona para /entrar.
+ * Protege a área logada (/painel): sem cookie de sessão → /entrar.
+ * A validação REAL da sessão (banco) acontece na página, em getEmpresaLogada;
+ * aqui é só o redirecionamento rápido de quem nem tem cookie.
  */
-export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({ request });
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
-        },
-      },
-    }
-  );
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (request.nextUrl.pathname.startsWith("/painel") && !user) {
+export function middleware(request: NextRequest) {
+  const temSessao = request.cookies.has("qubit_sessao");
+  if (request.nextUrl.pathname.startsWith("/painel") && !temSessao) {
     const url = request.nextUrl.clone();
     url.pathname = "/entrar";
     url.searchParams.set("proximo", request.nextUrl.pathname);
     return NextResponse.redirect(url);
   }
-
-  return response;
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/painel/:path*", "/auth/:path*"],
+  matcher: ["/painel/:path*"],
 };

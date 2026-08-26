@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { useReducedMotion } from "@/lib/useReducedMotion";
-import { orbits } from "@/content/universe";
+import { buildOrbits } from "@/content/universe";
+import { useOrbitPartners } from "@/lib/useOrbitPartners";
 import { Starfield } from "./Starfield";
 import { Core } from "./Core";
 import { Planet } from "./Planet";
@@ -16,6 +17,7 @@ export default function UniverseCanvas() {
   const [tabActive, setTabActive] = useState(true);
   const reduced = useReducedMotion();
   const animate = !reduced;
+  const orbits = buildOrbits(useOrbitPartners());
 
   // Pausa o render-loop quando a cena sai da viewport (economia de CPU/GPU) — §6.3
   useEffect(() => {

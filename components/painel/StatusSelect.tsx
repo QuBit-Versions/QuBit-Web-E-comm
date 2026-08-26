@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Loader2 } from "lucide-react";
-import { createSupabaseBrowser } from "@/lib/supabaseBrowser";
 
 // Mesmas chaves/rótulos do painel — fonte única do ciclo de vida da demanda.
 export const STATUS_OPTIONS = [
@@ -38,11 +37,20 @@ export function StatusSelect({ demandaId, status }: { demandaId: string; status:
     setError(false);
     setSaved(false);
 
-    const supabase = createSupabaseBrowser();
-    const { error: err } = await supabase.from("demandas").update({ status: next }).eq("id", demandaId);
+    let ok = false;
+    try {
+      const res = await fetch(`/api/painel/demandas/${demandaId}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: next }),
+      });
+      ok = res.ok;
+    } catch {
+      ok = false;
+    }
 
     setSaving(false);
-    if (err) {
+    if (!ok) {
       setValue(previous); // reverte o otimismo
       setError(true);
       return;

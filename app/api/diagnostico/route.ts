@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { diagnosticoSchema } from "@/lib/validation";
-import { getSupabase } from "@/lib/supabase";
 
 export async function POST(req: NextRequest) {
   let body: unknown;
@@ -18,25 +17,7 @@ export async function POST(req: NextRequest) {
   const data = parsed.data;
   let delivered = false;
 
-  // 1) Supabase — destino primário (tabela public.diagnosticos, RLS insert-only)
-  const supabase = getSupabase();
-  if (supabase) {
-    const { error } = await supabase.from("diagnosticos").insert({
-      nome: data.nome,
-      whatsapp: data.whatsapp,
-      email: data.email,
-      segmento: data.segmento,
-      mensagem: data.mensagem ?? null,
-      interesses: data.interesses ?? null,
-    });
-    if (error) {
-      console.error("[diagnostico] Supabase insert falhou:", error.message);
-    } else {
-      delivered = true;
-    }
-  }
-
-  // 2) Webhook opcional (ex.: notificação no WhatsApp/Slack)
+  // 1) Webhook opcional (ex.: notificação no WhatsApp/Slack)
   const webhook = process.env.FORM_SUBMISSION_WEBHOOK;
   if (webhook) {
     try {
@@ -52,8 +33,37 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // 2) Gestão API — destino primário: cria o lead no pipeline comercial (hub central)
+  const gestaoUrl = process.env.GESTAO_API_URL;
+  const gestaoKey = process.env.GESTAO_API_KEY;
+  if (gestaoUrl && gestaoKey) {
+    try {
+      const detalhes = [
+        data.segmento ? `Segmento: ${data.segmento}` : null,
+        data.interesses?.length ? `Interesses: ${data.interesses.join(", ")}` : null,
+        data.mensagem ? `Mensagem: ${data.mensagem}` : null,
+      ].filter(Boolean).join(" | ");
+      const res = await fetch(`${gestaoUrl}/api/leads`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-api-key": gestaoKey },
+        body: JSON.stringify({
+          nome: data.nome,
+          email: data.email,
+          telefone: data.whatsapp,
+          origem: "site:diagnostico",
+          observacao: detalhes || undefined,
+          origemExternaId: data.email ? `diag:${data.email}` : undefined,
+        }),
+      });
+      if (res.ok) delivered = true;
+      else console.error("[diagnostico] gestão respondeu", res.status);
+    } catch (e) {
+      console.error("[diagnostico] gestão erro:", e);
+    }
+  }
+
   // 3) Sem destino configurado → loga (dev) e considera entregue
-  if (!supabase && !webhook) {
+  if (!webhook && !(gestaoUrl && gestaoKey)) {
     console.log("[diagnostico] novo lead (sem destino configurado):", JSON.stringify(data, null, 2));
     delivered = true;
   }

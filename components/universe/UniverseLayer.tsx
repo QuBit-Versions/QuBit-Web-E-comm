@@ -1,16 +1,21 @@
 "use client";
 
 import { OrbitControls } from "@react-three/drei";
-import { orbits } from "@/content/universe";
+import { buildOrbits } from "@/content/universe";
+import { useOrbitPartners } from "@/lib/useOrbitPartners";
 import { Core } from "./Core";
 import { Planet } from "./Planet";
 
 /**
  * Camada de conteúdo do /universo — entra DENTRO do mesmo canvas global das
- * partículas (sem canvas separado). Os planetas/núcleo são escalados para a
- * câmera afastada do fundo (z≈60), orbitando dentro da nuvem de partículas.
+ * partículas (sem canvas separado). Os planetas (parceiros do banco) e o núcleo
+ * são escalados para a câmera afastada do fundo (z≈60), orbitando dentro da
+ * nuvem de partículas.
  */
 export function UniverseLayer({ animate }: { animate: boolean }) {
+  const partners = useOrbitPartners();
+  const orbits = buildOrbits(partners);
+
   return (
     <>
       <ambientLight intensity={0.5} />

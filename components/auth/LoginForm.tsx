@@ -7,15 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle } from "lucide-react";
 import { Field } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
-import { createSupabaseBrowser } from "@/lib/supabaseBrowser";
 import { loginSchema, type LoginData } from "@/lib/auth-validation";
-
-function traduz(msg: string) {
-  const m = msg.toLowerCase();
-  if (m.includes("invalid")) return "E-mail ou senha incorretos.";
-  if (m.includes("not confirmed") || m.includes("confirm")) return "Confirme seu e-mail antes de entrar.";
-  return "Não foi possível entrar agora. Tente de novo.";
-}
 
 export function LoginForm({ proximo = "/painel" }: { proximo?: string }) {
   const router = useRouter();
@@ -27,10 +19,19 @@ export function LoginForm({ proximo = "/painel" }: { proximo?: string }) {
   } = useForm<LoginData>({ resolver: zodResolver(loginSchema), mode: "onBlur" });
 
   const onSubmit = async (data: LoginData) => {
-    const supabase = createSupabaseBrowser();
-    const { error } = await supabase.auth.signInWithPassword({ email: data.email, password: data.senha });
-    if (error) {
-      setError("root", { message: traduz(error.message) });
+    try {
+      const res = await fetch("/api/auth/entrar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        setError("root", { message: body?.error ?? "Não foi possível entrar agora. Tente de novo." });
+        return;
+      }
+    } catch {
+      setError("root", { message: "Não foi possível entrar agora. Tente de novo." });
       return;
     }
     router.push(proximo);

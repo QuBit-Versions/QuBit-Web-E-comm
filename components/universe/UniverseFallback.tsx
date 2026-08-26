@@ -1,20 +1,26 @@
 import Link from "next/link";
-import { partners } from "@/content/partners";
+import type { Partner } from "@/content/partners";
 import { universe_copy } from "@/content/universe";
 
 /**
  * Tier 3 — camada semântica acessível (SSR, SEO, sem JS, sem WebGL).
- * É a fonte de verdade dos links de parceiros. Quando o Canvas 3D carrega,
- * esta camada vira `sr-only` (continua no DOM para leitores de tela e busca).
+ * É a fonte de verdade dos links de parceiros (recebidos do banco via props).
+ * Quando o Canvas 3D carrega, esta camada vira `sr-only`.
  */
-export function UniverseFallback({ className = "" }: { className?: string }) {
+export function UniverseFallback({
+  partners = [],
+  className = "",
+}: {
+  partners?: Partner[];
+  className?: string;
+}) {
   return (
     <section className={className} aria-label={universe_copy.fallbackTitle}>
       <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 max-w-[1320px] mx-auto px-6">
         {partners.map((p) => (
           <li key={p.id}>
             <a
-              href={p.url}
+              href={p.url.startsWith("http") ? p.url : "/diagnostico"}
               target={p.url.startsWith("http") ? "_blank" : undefined}
               rel="noopener noreferrer"
               className="flex flex-col gap-1 p-5 rounded-lg border border-line bg-surface-1 hover:border-text-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-text"

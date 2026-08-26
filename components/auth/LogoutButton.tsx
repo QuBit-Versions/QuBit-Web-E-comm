@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { createSupabaseBrowser } from "@/lib/supabaseBrowser";
 
 export function LogoutButton() {
   const router = useRouter();
@@ -11,7 +10,7 @@ export function LogoutButton() {
       variant="secondary"
       size="sm"
       onClick={async () => {
-        await createSupabaseBrowser().auth.signOut();
+        await fetch("/api/auth/sair", { method: "POST" }).catch(() => {});
         router.push("/entrar");
         router.refresh();
       }}

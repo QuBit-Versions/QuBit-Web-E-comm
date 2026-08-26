@@ -7,10 +7,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, Plus } from "lucide-react";
 import { Field, Textarea } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
-import { createSupabaseBrowser } from "@/lib/supabaseBrowser";
 import { demandaSchema, type DemandaData } from "@/lib/auth-validation";
 
-export function NovaDemandaForm({ userId }: { userId: string }) {
+export function NovaDemandaForm() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const {
@@ -22,11 +21,14 @@ export function NovaDemandaForm({ userId }: { userId: string }) {
   } = useForm<DemandaData>({ resolver: zodResolver(demandaSchema), mode: "onBlur" });
 
   const onSubmit = async (data: DemandaData) => {
-    const supabase = createSupabaseBrowser();
-    const { error } = await supabase
-      .from("demandas")
-      .insert({ empresa_id: userId, titulo: data.titulo, descricao: data.descricao ?? null });
-    if (error) {
+    try {
+      const res = await fetch("/api/painel/demandas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
       setError("root", { message: "Não foi possível enviar a demanda. Tente de novo." });
       return;
     }

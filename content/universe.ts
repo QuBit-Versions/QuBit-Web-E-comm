@@ -1,4 +1,4 @@
-import { partners, type Partner } from "@/content/partners";
+import type { Partner } from "@/content/partners";
 
 export type OrbitBody = {
   partner: Partner;
@@ -32,20 +32,22 @@ const sectorColors: Record<string, string> = {
 };
 
 /** Distribui os parceiros em órbitas elípticas escalonadas ao redor do núcleo QuBit. */
-export const orbits: OrbitBody[] = partners.map((partner, i) => {
-  const ring = Math.floor(i / 3); // 3 planetas por anel
-  const baseRadius = 4 + ring * 2.6;
-  return {
-    partner,
-    radiusX: baseRadius + (i % 3) * 0.6,
-    radiusZ: baseRadius * 0.7 + (i % 3) * 0.4,
-    speed: 0.12 - ring * 0.02,
-    phase: (i / partners.length) * Math.PI * 2,
-    tilt: ((i % 4) - 1.5) * 0.4,
-    size: 0.34 + (i % 3) * 0.06,
-    color: sectorColors[partner.sector] ?? "#8AA0FF",
-  };
-});
+export function buildOrbits(partners: Partner[]): OrbitBody[] {
+  return partners.map((partner, i) => {
+    const ring = Math.floor(i / 3); // 3 planetas por anel
+    const baseRadius = 4 + ring * 2.6;
+    return {
+      partner,
+      radiusX: baseRadius + (i % 3) * 0.6,
+      radiusZ: baseRadius * 0.7 + (i % 3) * 0.4,
+      speed: 0.12 - ring * 0.02,
+      phase: (i / Math.max(partners.length, 1)) * Math.PI * 2,
+      tilt: ((i % 4) - 1.5) * 0.4,
+      size: 0.34 + (i % 3) * 0.06,
+      color: sectorColors[partner.sector] ?? "#8AA0FF",
+    };
+  });
+}
 
 export const universe_copy = {
   eyebrow: "O universo QuBit",
