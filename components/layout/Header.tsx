@@ -153,7 +153,7 @@ export function Header() {
             <Link
               key={link.href}
               href={link.href}
-              className="text-lg text-text-1 hover:text-text-2 transition-colors"
+              className="inline-flex items-center min-h-11 text-lg text-text-1 hover:text-text-2 transition-colors"
               onClick={() => setMenuOpen(false)}
             >
               {link.label}
@@ -172,7 +172,7 @@ export function Header() {
             <>
               <Link
                 href="/entrar"
-                className="text-lg text-text-1 hover:text-text-2 transition-colors"
+                className="inline-flex items-center min-h-11 text-lg text-text-1 hover:text-text-2 transition-colors"
                 onClick={() => setMenuOpen(false)}
               >
                 Entrar

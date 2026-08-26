@@ -82,7 +82,11 @@ export function Footer() {
 
         <nav aria-label="Rodapé" className="flex flex-wrap gap-x-8 gap-y-3 text-sm text-text-2">
           {footerLinks.map((link) => (
-            <Link key={link.href} href={link.href} className="hover:text-text-1 transition-colors">
+            <Link
+              key={link.href}
+              href={link.href}
+              className="inline-flex items-center min-h-11 hover:text-text-1 transition-colors"
+            >
               {link.label}
             </Link>
           ))}

@@ -19,7 +19,7 @@ export default async function EntrarPage({
   const proximo = sp.proximo ?? "/painel";
 
   return (
-    <main id="main-content" className="min-h-screen flex items-center justify-center px-6 py-32">
+    <main id="main-content" className="min-h-dvh flex items-center justify-center px-6 py-32">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" aria-label="QuBit — início" className="inline-block">

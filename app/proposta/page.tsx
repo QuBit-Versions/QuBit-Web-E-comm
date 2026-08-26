@@ -15,7 +15,7 @@ const whatsappUrl = `https://wa.me/${site.whatsapp.replace(/\D/g, "")}?text=${en
 
 export default function PropostaPage() {
   return (
-    <main id="main-content" className="min-h-screen pt-32 pb-24 px-6">
+    <main id="main-content" className="min-h-dvh pt-32 pb-24 px-6">
       <div className="max-w-[1320px] mx-auto">
         {/* Cabeçalho */}
         <header className="max-w-3xl mb-16">

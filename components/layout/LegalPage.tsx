@@ -8,7 +8,7 @@ type LegalContent = {
 
 export function LegalPage({ content }: { content: LegalContent }) {
   return (
-    <main id="main-content" className="min-h-screen pt-32 pb-24 px-6">
+    <main id="main-content" className="min-h-dvh pt-32 pb-24 px-6">
       <article className="max-w-2xl mx-auto surface-glass rounded-2xl p-8 md:p-12">
         <h1 className="text-h1 text-text-1 mb-2">{content.title}</h1>
         <p className="text-sm text-text-3 mb-10">{content.updatedAt}</p>

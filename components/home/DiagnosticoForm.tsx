@@ -64,7 +64,7 @@ export function DiagnosticoForm({ interesses = [] }: { interesses?: Interesse[] 
                   type="button"
                   onClick={() => setChosen((s) => s.filter((x) => x.id !== c.id))}
                   aria-label={`Remover ${c.name}`}
-                  className="w-7 h-7 inline-flex items-center justify-center rounded-full hover:bg-brand/20 transition-colors"
+                  className="w-11 h-11 -m-2 inline-flex items-center justify-center rounded-full hover:bg-brand/20 transition-colors"
                 >
                   <X className="w-3.5 h-3.5" aria-hidden />
                 </button>

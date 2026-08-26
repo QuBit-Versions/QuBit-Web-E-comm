@@ -11,7 +11,7 @@ export async function Hero() {
   const whatsappUrl = `https://wa.me/${site.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(site.whatsappMessage)}`;
 
   return (
-    <section className="relative min-h-screen flex flex-col justify-center pt-24 pb-12 px-6">
+    <section className="relative min-h-dvh flex flex-col justify-center pt-24 pb-12 px-6">
       {/* coluna de texto mais larga que a do visual — §5.1 */}
       <div className="max-w-[1320px] mx-auto w-full grid md:grid-cols-[1.15fr_0.85fr] gap-16 items-center flex-1 py-12">
         <div>

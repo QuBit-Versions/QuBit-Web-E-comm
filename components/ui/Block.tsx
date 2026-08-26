@@ -38,7 +38,7 @@ export function Block({
       ref={ref}
       id={id}
       data-active={active}
-      className={`snap-block min-h-screen flex flex-col justify-center ${className}`}
+      className={`snap-block min-h-dvh flex flex-col justify-center justify-safe-center py-24 ${className}`}
     >
       {children}
     </div>

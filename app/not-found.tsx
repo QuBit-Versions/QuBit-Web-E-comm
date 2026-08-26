@@ -4,7 +4,7 @@ import { not_found_page } from "@/content/copy";
 
 export default function NotFound() {
   return (
-    <main id="main-content" className="min-h-screen flex items-center justify-center px-6 py-32">
+    <main id="main-content" className="min-h-dvh flex items-center justify-center px-6 py-32">
       <div className="max-w-lg text-center">
         {/* Polvo vivo "perdido no espaço" — mascote em código (não imagem) */}
         <div className="relative w-40 h-40 mx-auto mb-10 flex items-center justify-center" aria-hidden>

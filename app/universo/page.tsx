@@ -27,7 +27,7 @@ export default async function UniversoPage() {
   return (
     <main
       id="main-content"
-      className="relative z-10 min-h-screen pt-32 pb-24 px-6 pointer-events-none flex flex-col"
+      className="relative z-10 min-h-dvh pt-32 pb-24 px-6 pointer-events-none flex flex-col"
     >
       <div className="max-w-[1320px] mx-auto w-full">
         <header className="max-w-2xl mb-6">

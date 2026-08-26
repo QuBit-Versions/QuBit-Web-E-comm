@@ -12,7 +12,7 @@ const whatsappUrl = `https://wa.me/${site.whatsapp.replace(/\D/g, "")}?text=${en
 
 export default function ObrigadoPage() {
   return (
-    <main id="main-content" className="min-h-screen flex items-center justify-center px-6">
+    <main id="main-content" className="min-h-dvh flex items-center justify-center px-6">
       <Stepper current="pronto" />
       <div className="max-w-lg text-center surface-glass glow-aurora rounded-2xl p-10 md:p-12">
         <div className="w-16 h-16 rounded-full bg-brand/10 border border-brand/30 flex items-center justify-center mx-auto mb-8 [box-shadow:var(--glow-brand)]" aria-hidden>

@@ -140,7 +140,7 @@ export default async function PainelPage() {
   const minhasPlanejadas = entregas.filter((e) => e.status === "planejada");
 
   return (
-    <main id="main-content" className="min-h-screen pt-28 pb-20 px-6">
+    <main id="main-content" className="min-h-dvh pt-28 pb-20 px-6">
       <div className="max-w-[1320px] mx-auto">
         <header className="flex items-center justify-between mb-12">
           <Link href="/" aria-label="QuBit — início">

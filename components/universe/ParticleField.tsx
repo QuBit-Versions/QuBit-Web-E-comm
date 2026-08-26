@@ -4,6 +4,17 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
+/** PRNG determinístico (mulberry32) — permite gerar a nuvem sem quebrar a pureza. */
+function makeRng(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 /**
  * Sistema de partículas (GPU) reutilizável — a base visual do universo QuBit.
  *
@@ -125,7 +136,11 @@ export function ParticleField({
   const ref = useRef<THREE.Points>(null);
   const matRef = useRef<THREE.ShaderMaterial>(null);
   const morphTarget = useRef(morph);
-  morphTarget.current = morph;
+  // Sincroniza em efeito: escrever num ref durante o render torna o componente
+  // impuro e o React pode descartar o resultado desse render.
+  useEffect(() => {
+    morphTarget.current = morph;
+  }, [morph]);
 
   const palette = useMemo(() => {
     const css = getComputedStyle(document.documentElement);
@@ -136,6 +151,10 @@ export function ParticleField({
   }, []);
 
   const { positions, shape, scales, seeds, colors } = useMemo(() => {
+    // Gerador semeado em vez de Math.random(): o corpo de um useMemo precisa ser
+    // puro (mesma entrada, mesma saída) — é o que o React Compiler assume para
+    // poder reexecutá-lo. Mesma distribuição estatística, layout estável.
+    const rnd = makeRng(0x9e3779b9);
     const positions = new Float32Array(count * 3);
     const shape = new Float32Array(count * 3);
     const scales = new Float32Array(count);
@@ -147,24 +166,24 @@ export function ParticleField({
 
     for (let i = 0; i < count; i++) {
       // distância inicial uniforme no volume; x/y enchem o frustum ÀQUELA distância
-      const dist0 = NEAR_D + Math.random() * (FAR_D - NEAR_D);
+      const dist0 = NEAR_D + rnd() * (FAR_D - NEAR_D);
       const hh = Math.tan(fovRad / 2) * dist0;
       const hw = hh * aspect;
-      positions[i * 3] = (Math.random() * 2 - 1) * hw * 1.1; // worldX (fixo)
-      positions[i * 3 + 1] = (Math.random() * 2 - 1) * hh * 1.1; // worldY (fixo)
+      positions[i * 3] = (rnd() * 2 - 1) * hw * 1.1; // worldX (fixo)
+      positions[i * 3 + 1] = (rnd() * 2 - 1) * hh * 1.1; // worldY (fixo)
       positions[i * 3 + 2] = dist0; // distância inicial (anda no shader)
 
       // alvo de forma padrão: esfera (sobrescrito por shapeSrc)
       const sr = shapeSize * 0.5;
-      const st = Math.random() * Math.PI * 2;
-      const sp = Math.acos(2 * Math.random() - 1);
+      const st = rnd() * Math.PI * 2;
+      const sp = Math.acos(2 * rnd() - 1);
       shape[i * 3] = sr * Math.sin(sp) * Math.cos(st);
       shape[i * 3 + 1] = sr * Math.cos(sp);
       shape[i * 3 + 2] = sr * Math.sin(sp) * Math.sin(st) * 0.6;
 
-      scales[i] = 0.4 + Math.pow(Math.random(), 2) * 1.7; // muitas pequenas, poucas grandes
-      seeds[i] = Math.random();
-      const col = Math.random() < 0.1 ? palette.brand : palette.paper;
+      scales[i] = 0.4 + Math.pow(rnd(), 2) * 1.7; // muitas pequenas, poucas grandes
+      seeds[i] = rnd();
+      const col = rnd() < 0.1 ? palette.brand : palette.paper;
       colors[i * 3] = col.r;
       colors[i * 3 + 1] = col.g;
       colors[i * 3 + 2] = col.b;

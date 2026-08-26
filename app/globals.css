@@ -239,6 +239,21 @@ html.snap-page .snap-block {
   transform: none;
 }
 
+/* ── Mobile: snap nunca pode aprisionar ───────────────────────────────────
+   Num telefone o conteúdo de um bloco quase sempre é mais alto que a tela.
+   Com `mandatory` + `scroll-snap-stop: always` o navegador insiste em parar no
+   início de cada bloco e o que passa da dobra vira conteúdo inalcançável.
+   Em ponteiro grosso (dedo) e telas estreitas: proximity, sem parada forçada.
+   O caráter do scrollytelling continua; a armadilha some. */
+@media (max-width: 767px), (pointer: coarse) {
+  html.snap-page {
+    scroll-snap-type: y proximity;
+  }
+  html.snap-page .snap-block {
+    scroll-snap-stop: normal;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html.snap-page { scroll-snap-type: none; }
   .b-item, .b-spread, .b-char, .b-word {
@@ -313,4 +328,25 @@ html.snap-page .snap-block {
     transform: none !important;
     transition: none !important;
   }
+}
+
+/* ── Área segura de aparelhos com notch / indicador de home ───────────────
+   Elementos fixos no rodapé ficam por baixo do indicador do iPhone sem isto. */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.bottom-safe {
+  bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+}
+.bottom-safe-raised {
+  bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* ── Centragem vertical que não engole o topo ─────────────────────────────
+   `justify-content: center` num flex column estoura nas DUAS pontas quando o
+   conteúdo é mais alto que o container — e o topo fica inalcançável por scroll.
+   `safe center` degrada para flex-start nesse caso. A 1ª linha é o fallback
+   para quem não suporta a palavra-chave `safe`. */
+.justify-safe-center {
+  justify-content: safe center;
 }

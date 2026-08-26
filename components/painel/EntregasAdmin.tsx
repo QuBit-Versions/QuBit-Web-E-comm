@@ -119,7 +119,7 @@ export function EntregasAdmin({ empresaId, entregas }: { empresaId: string; entr
                 type="button"
                 aria-label={`Remover entrega ${e.titulo}`}
                 onClick={() => remover(e.id)}
-                className="min-w-8 min-h-8 flex items-center justify-center rounded-full text-text-3 hover:text-danger transition-colors shrink-0"
+                className="min-w-11 min-h-11 flex items-center justify-center rounded-full text-text-3 hover:text-danger transition-colors shrink-0"
               >
                 <X className="w-3.5 h-3.5" aria-hidden />
               </button>

@@ -1,18 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
-/** Retorna true se o usuário pediu menos movimento (prefers-reduced-motion: reduce). */
+const QUERY = "(prefers-reduced-motion: reduce)";
+
+/**
+ * Preferência de movimento reduzido do sistema.
+ *
+ * Usa `useSyncExternalStore` em vez de useState+useEffect: a media query é uma
+ * fonte de verdade EXTERNA ao React. Com efeito, o primeiro render sempre saía
+ * como `false` e só no segundo virava o valor real — um frame de animação que
+ * escapava justamente para quem pediu para não ter animação.
+ */
+function subscribe(onChange: () => void): () => void {
+  const mq = window.matchMedia(QUERY);
+  mq.addEventListener("change", onChange);
+  return () => mq.removeEventListener("change", onChange);
+}
+
+function getSnapshot(): boolean {
+  return window.matchMedia(QUERY).matches;
+}
+
+/** No servidor não há preferência declarada; assume movimento normal. */
+function getServerSnapshot(): boolean {
+  return false;
+}
+
 export function useReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduced(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setReduced(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
-
-  return reduced;
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }

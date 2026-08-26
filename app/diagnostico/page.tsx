@@ -27,7 +27,7 @@ export default async function DiagnosticoPage({
     .map((s) => ({ id: s.id, name: s.name }));
 
   return (
-    <main id="main-content" className="min-h-screen pt-32 pb-24 px-6">
+    <main id="main-content" className="min-h-dvh pt-32 pb-24 px-6">
       <Stepper current="registro" />
       <div className="max-w-2xl mx-auto">
         <p className="text-mono-label text-brand-text mb-4">{diagnostico_page.eyebrow}</p>

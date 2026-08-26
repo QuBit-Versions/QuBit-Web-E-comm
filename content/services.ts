@@ -294,14 +294,14 @@ export const services: Service[] = [
       "O que o seu negócio precisa fazer não cabe dentro de um navegador — e a experiência que você queria entregar fica sempre pela metade.",
     outcome:
       "Seu produto no bolso do cliente, com câmera, GPS e notificação. A marca deixa de ser um link salvo e vira um ícone na tela dele.",
-    price: "a partir de R$ 25.000",
+    price: "a partir de R$ 40.000",
     priceModel: "proposta",
     priceDriver: "Backend, integrações, pagamentos e manutenção em dois ecossistemas (Kotlin + Swift).",
     tiers: [
-      { label: "Protótipo e descoberta", price: "R$ 2.000 a R$ 6.000" },
-      { label: "MVP nativo simples", price: "R$ 25.000 a R$ 50.000" },
-      { label: "App com backend, pagamentos, GPS e notificações", price: "R$ 50.000 a R$ 120.000+" },
-      { label: "Produto operacional complexo", price: "sob proposta" },
+      { label: "Protótipo e descoberta" },
+      { label: "MVP nativo simples" },
+      { label: "App com backend, pagamentos, GPS e notificações" },
+      { label: "Produto operacional complexo" },
     ],
     includes: [
       "descoberta de produto, UX/UI e arquitetura",

@@ -38,8 +38,18 @@ function chooseRings(total: number) {
   const counts = rings.map((r) => Math.min(r.cap, Math.max(1, Math.round((total * r.r) / sumR))));
   let diff = total - counts.reduce((a, b) => a + b, 0);
   for (let pass = 0; diff !== 0 && pass < 12; pass++) {
-    for (let i = 0; i < rings.length && diff > 0; i++) if (counts[i] < rings[i].cap) (counts[i]++, diff--);
-    for (let i = rings.length - 1; i >= 0 && diff < 0; i--) if (counts[i] > 1) (counts[i]--, diff++);
+    for (let i = 0; i < rings.length && diff > 0; i++) {
+      if (counts[i] < rings[i].cap) {
+        counts[i]++;
+        diff--;
+      }
+    }
+    for (let i = rings.length - 1; i >= 0 && diff < 0; i--) {
+      if (counts[i] > 1) {
+        counts[i]--;
+        diff++;
+      }
+    }
   }
   return rings.map((r, i) => ({ r: r.r, count: counts[i], start: -90 + i * 25 }));
 }
