@@ -3,15 +3,23 @@ import { UniverseFallbackGate } from "@/components/universe/UniverseFallbackGate
 import { ButtonLink } from "@/components/ui/Button";
 import { universe_copy } from "@/content/universe";
 import { site } from "@/content/copy";
+import { FUNNEL_CONTACT } from "@/lib/funnel";
+import { getOrbitPartners } from "@/lib/orbita";
 
 export const metadata: Metadata = {
   title: `${universe_copy.fallbackTitle} — ${site.name}`,
   description: universe_copy.sub,
+  alternates: { canonical: "/universo" },
 };
+
+// Parceiros vêm do banco a CADA requisição (sem snapshot estático do build, que
+// nasce vazio por não ter banco no Cloud Build). Mantém a órbita sempre atual.
+export const dynamic = "force-dynamic";
 
 const whatsappUrl = `https://wa.me/${site.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(site.whatsappMessage)}`;
 
-export default function UniversoPage() {
+export default async function UniversoPage() {
+  const partners = await getOrbitPartners();
   // O universo 3D é o próprio fundo global (canvas em layout.tsx), que no /universo
   // vira interativo e ganha os planetas. O conteúdo flutua por cima em z-10 e é
   // pointer-events-none, deixando o arraste passar para o canvas; só os links e
@@ -34,7 +42,7 @@ export default function UniversoPage() {
 
         <section className="mt-12 max-w-2xl pointer-events-auto">
           <div className="flex flex-col sm:flex-row gap-4">
-            <ButtonLink href="/diagnostico" size="lg">
+            <ButtonLink href={FUNNEL_CONTACT} size="lg">
               {universe_copy.ctaPrimary}
             </ButtonLink>
             <ButtonLink href={whatsappUrl} target="_blank" rel="noopener noreferrer" variant="secondary" size="lg">
@@ -44,7 +52,7 @@ export default function UniversoPage() {
         </section>
 
         {/* Camada semântica acessível (sr-only com WebGL; visível sem WebGL) */}
-        <UniverseFallbackGate />
+        <UniverseFallbackGate partners={partners} />
       </div>
     </main>
   );

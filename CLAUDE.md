@@ -1,7 +1,12 @@
-# QuBit — Site Institucional
+# QuBit — Site institucional + portal de parceiros
 
 Stack: **Next.js 16 + React 19 + TypeScript + Tailwind CSS v4**
+Backend: **PostgreSQL (Cloud SQL) + auth própria (scrypt) + Google Cloud Storage**
+Deploy: **Docker → Cloud Run** (`output: "standalone"`)
 Idioma do produto: **pt-BR**. Identificadores de código em inglês.
+
+> Supabase foi REMOVIDO. Não existe mais `lib/supabase*.ts` nem `supabase/*.sql`.
+> Banco em `lib/db.ts`, auth em `lib/auth.ts`, schema em `db/schema.sql`.
 
 ---
 
@@ -27,35 +32,51 @@ Idioma do produto: **pt-BR**. Identificadores de código em inglês.
 
 ```text
 app/
-  layout.tsx            # fontes, metadata base, skip-link
-  page.tsx              # Home (todas as seções)
-  diagnostico/page.tsx  # Formulário de conversão primária
-  obrigado/page.tsx     # Confirmação pós-envio
-  proposta/page.tsx     # Proposta comercial em web
-  universo/page.tsx     # Experiência 3D com parceiros
-  privacidade/page.tsx  # LGPD (TODO)
-  termos/page.tsx       # Termos (TODO)
-  not-found.tsx         # 404 com polvo "perdido no espaço"
+  layout.tsx            # fontes, metadata base, skip-link (SEM canonical — ver SEO)
+  page.tsx              # Home (blocos de scrollytelling)
+  servicos/page.tsx     # Portfolio + precos; selecao de interesse
+  diagnostico/page.tsx  # Formulario de lead
+  obrigado/page.tsx     # Confirmacao pos-envio
+  proposta/page.tsx     # Proposta comercial em web (noindex)
+  universo/page.tsx     # Experiencia 3D com parceiros
+  cadastro/ entrar/     # Portal de parceiros
+  painel/page.tsx       # Area logada: admin e empresa no mesmo arquivo
+  privacidade/ termos/  # LGPD (texto provisorio)
+  not-found.tsx         # 404 com polvo "perdido no espaco"
+  api/
+    auth/               # cadastro, entrar, sair, sessao
+    painel/             # demandas, entregas, empresas/[id], logo - RBAC por role
+    diagnostico/        # lead -> Gestao API / webhook
+    orbita/             # parceiros em orbita (publico)
 components/
-  layout/               # Header, Footer, WhatsAppFab, Container, Section
-  ui/                   # Button, Badge, Input, Field, Accordion, Skeleton, Tooltip
-  home/                 # Hero, Problem, Solution, HowItWorks, Modules, Partnership, Faq, FinalCta
-  universe/             # UniverseCanvas, Planet, OrbitLogo, Mascot, UniverseFallback
+  layout/               # Header, Footer, WhatsAppFab, SpaceBackground, Analytics
+  ui/                   # Button, Field, Accordion, Block, SnapMode, SplitText
+  home/                 # Hero, Universe, Depoimentos, PorQue, Modules, Faq, FinalCta
+  services/             # ServiceCard, SelectionBar, SelectionContext
+  painel/               # LogoUpload, NovaDemandaForm, StatusSelect, OrbitaControls
+  auth/                 # LoginForm, CadastroForm, LogoutButton
+  funnel/               # Stepper
+  universe/             # ParticleField, UniverseLayer, Core, Planet, UniverseFallback
 content/
-  copy.ts               # FONTE ÚNICA de todo o texto do site
-  modules.ts            # Módulos e preços
-  faq.ts                # Perguntas frequentes
-  partners.ts           # Parceiros (placeholders — trocar pelos reais)
+  copy.ts               # FONTE UNICA do texto do site
+  services.ts           # FONTE UNICA de servicos, pilares e PRECOS
+  faq.ts partners.ts universe.ts octopus.ts
+db/schema.sql           # schema do Postgres (idempotente)
 lib/
-  analytics.ts          # GA4 + Meta Pixel (TODO: IDs reais)
-  validation.ts         # Schemas Zod para formulários
-styles/
-  tokens.css            # CSS custom properties (design tokens)
-public/
-  qubit_wordmark_light.svg / dark.svg
-  qubit_symbol.svg
-  avatar_master.png
+  db.ts auth.ts rate-limit.ts orbita.ts
+  validation.ts auth-validation.ts
+  deviceTier.ts useReducedMotion.ts
+styles/tokens.css       # design tokens
 ```
+
+## Regras de SEO (aprendidas na marra)
+
+- **Nunca colocar `alternates.canonical` no `app/layout.tsx`.** Metadata e herdada
+  pelas rotas filhas — um canonical no layout faz TODA pagina se declarar duplicata
+  da home. Cada `page.tsx` indexavel define o seu.
+- **`app/sitemap.ts` so lista rota indexavel.** Se a pagina tem `robots: { index: false }`
+  ou esta no `disallow` de `app/robots.ts`, ela nao entra no sitemap.
+
 
 ---
 
@@ -170,20 +191,35 @@ public/
 ## Como rodar localmente
 
 ```bash
-cd C:\Users\br-01\Documents\QuBit\site
+cd C:\Users\br-01\Documents\Sistemas\QuBit\QuBit-Web-system
 npm run dev          # http://localhost:3000
-npm run build        # build de produção
-npm run lint         # ESLint
+npm run build        # build de producao
+npm run lint         # ESLint - o build do Next 16 NAO roda lint
 ```
+
+O site de marketing sobe sem banco. Para `/entrar`, `/cadastro` e `/painel` e preciso
+um Postgres com `db/schema.sql` aplicado e `DATABASE_URL` no `.env.local`.
+A conta criada com o e-mail de `OWNER_EMAIL` vira admin.
 
 ## Deploy
 
-Alvo: **Vercel**. Conectar o repositório GitHub e configurar as variáveis de ambiente necessárias.
-Variáveis que serão necessárias:
+Alvo: **Google Cloud Run** (nao Vercel). `Dockerfile` multi-stage servindo
+`.next/standalone/server.js` na porta 8080.
+
+```bash
+gcloud run deploy --source .
+```
+
+Variaveis necessarias em producao:
 
 ```env
+INSTANCE_CONNECTION_NAME=   # PROJETO:REGIAO:INSTANCIA (socket do Cloud SQL)
+DB_NAME= DB_USER= DB_PASSWORD=
+LOGOS_BUCKET=               # bucket publico das logos
+OWNER_EMAIL=                # e-mail que vira admin no cadastro
 NEXT_PUBLIC_WHATSAPP_NUMBER=
 NEXT_PUBLIC_GA4_ID=
 NEXT_PUBLIC_META_PIXEL_ID=
+GESTAO_API_URL= GESTAO_API_KEY=
 FORM_SUBMISSION_WEBHOOK=
 ```

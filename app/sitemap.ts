@@ -3,14 +3,15 @@ import type { MetadataRoute } from "next";
 // TODO: trocar pelo domínio real quando definido
 const BASE = "https://qubit.com.br";
 
+// Só entram aqui rotas INDEXÁVEIS. /diagnostico, /proposta e /obrigado declaram
+// `robots: { index: false }` na própria página e estão no disallow do robots.ts —
+// listá-las no sitemap era uma contradição que o Search Console reporta como erro.
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
   const routes: { path: string; priority: number; freq: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
     { path: "/", priority: 1.0, freq: "weekly" },
     { path: "/servicos", priority: 0.9, freq: "monthly" },
     { path: "/universo", priority: 0.8, freq: "monthly" },
-    { path: "/proposta", priority: 0.7, freq: "monthly" },
-    { path: "/diagnostico", priority: 0.9, freq: "monthly" },
     { path: "/privacidade", priority: 0.3, freq: "yearly" },
     { path: "/termos", priority: 0.3, freq: "yearly" },
   ];

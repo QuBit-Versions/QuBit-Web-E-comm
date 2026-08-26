@@ -8,8 +8,8 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      // rotas de conversão/sistema fora do índice
-      disallow: ["/api/", "/obrigado", "/diagnostico", "/proposta"],
+      // rotas de conversão/sistema/portal fora do índice
+      disallow: ["/api/", "/obrigado", "/diagnostico", "/proposta", "/painel", "/entrar", "/cadastro"],
     },
     sitemap: `${BASE}/sitemap.xml`,
     host: BASE,

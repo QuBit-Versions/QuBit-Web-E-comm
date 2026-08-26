@@ -3,9 +3,11 @@ import { ButtonLink } from "@/components/ui/Button";
 import { OctopusMark } from "@/components/brand/OctopusMark";
 import { SplitText } from "@/components/ui/SplitText";
 import { hero, site } from "@/content/copy";
-import { partners } from "@/content/partners";
+import { getOrbitPartners } from "@/lib/orbita";
+import { FUNNEL_START } from "@/lib/funnel";
 
-export function Hero() {
+export async function Hero() {
+  const partners = await getOrbitPartners();
   const whatsappUrl = `https://wa.me/${site.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(site.whatsappMessage)}`;
 
   return (
@@ -21,7 +23,7 @@ export function Hero() {
             {hero.sub}
           </p>
           <div className="b-item flex flex-wrap gap-4 mb-8" style={{ ["--i" as string]: 16 } as React.CSSProperties}>
-            <ButtonLink href="/servicos" size="lg">
+            <ButtonLink href={FUNNEL_START} size="lg">
               {hero.ctaPrimary}
             </ButtonLink>
             <ButtonLink href={whatsappUrl} target="_blank" rel="noopener noreferrer" variant="secondary" size="lg">

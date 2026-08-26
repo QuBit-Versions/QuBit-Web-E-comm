@@ -73,6 +73,11 @@ body {
   font-weight: 500;
   line-height: 1.05;
   letter-spacing: -0.01em;
+  /* Medida controlada (Bringhurst): manchete longa em fonte pixel fica ilegível
+     ocupando a coluna inteira. `balance` distribui as linhas em vez de deixar
+     uma linha cheia + uma órfã. */
+  text-wrap: balance;
+  max-width: 18ch;
 }
 
 .text-h1 {
@@ -80,6 +85,8 @@ body {
   font-size: clamp(2rem, 3vw + 0.75rem, 3rem);
   font-weight: 500;
   line-height: 1.1;
+  text-wrap: balance;
+  max-width: 24ch;
 }
 
 .text-h2 {
@@ -87,6 +94,7 @@ body {
   font-size: clamp(1.5rem, 2vw + 0.5rem, 2.25rem);
   font-weight: 500;
   line-height: 1.15;
+  text-wrap: balance;
 }
 
 .text-h3 {
@@ -98,6 +106,8 @@ body {
 .text-body-lg {
   font-size: 1.125rem;
   line-height: 1.6;
+  max-width: 62ch;   /* 45–75 caracteres por linha */
+  text-wrap: pretty; /* sem órfã na última linha */
 }
 
 /* Eyebrow/label técnica em mono. SEM uppercase: a regra de marca é sentence case
@@ -209,9 +219,15 @@ html.snap-page .snap-block {
 
 /* Letras que surgem e se emparelham: metade vem da esquerda, metade da direita,
    convergindo até formar a palavra (--dir por caractere). */
+/* Envelope por PALAVRA: impede a quebra de linha no meio da palavra. Sem isto,
+   cada .b-char inline-block vira um ponto de quebra válido para o navegador. */
+.b-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
 .b-char {
   display: inline-block;
-  white-space: pre;
   opacity: 0;
   transform: translateX(calc(var(--dir, 0) * 0.7em)) translateY(0.3em) rotate(calc(var(--dir, 0) * 7deg));
   transition: opacity 0.5s var(--ease), transform 0.6s var(--ease);
@@ -225,7 +241,7 @@ html.snap-page .snap-block {
 
 @media (prefers-reduced-motion: reduce) {
   html.snap-page { scroll-snap-type: none; }
-  .b-item, .b-spread, .b-char {
+  .b-item, .b-spread, .b-char, .b-word {
     opacity: 1 !important;
     transform: none !important;
     filter: none !important;

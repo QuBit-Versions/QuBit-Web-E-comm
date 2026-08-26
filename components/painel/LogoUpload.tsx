@@ -3,10 +3,9 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { createSupabaseBrowser } from "@/lib/supabaseBrowser";
 
-/** Envio da logo da empresa para o Storage (bucket "logos/{uid}/...") + salva a URL no perfil. */
-export function LogoUpload({ userId, logoUrl }: { userId: string; logoUrl?: string | null }) {
+/** Envio da logo da empresa para o Cloud Storage (via /api/painel/logo). */
+export function LogoUpload({ logoUrl }: { logoUrl?: string | null }) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
@@ -21,24 +20,22 @@ export function LogoUpload({ userId, logoUrl }: { userId: string; logoUrl?: stri
 
     setBusy(true);
     setError(null);
-    const supabase = createSupabaseBrowser();
-    const ext = (file.name.split(".").pop() || "png").toLowerCase();
-    const path = `${userId}/logo.${ext}`;
-    const { error: upErr } = await supabase.storage.from("logos").upload(path, file, { upsert: true });
-    if (upErr) {
+    try {
+      const fd = new FormData();
+      fd.append("logo", file);
+      const res = await fetch("/api/painel/logo", { method: "POST", body: fd });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        setError(data?.error ?? "Falha ao enviar. Tente de novo.");
+        setBusy(false);
+        return;
+      }
+      setPreview(data.url);
+    } catch {
       setError("Falha ao enviar. Tente de novo.");
       setBusy(false);
       return;
     }
-    const { data: pub } = supabase.storage.from("logos").getPublicUrl(path);
-    const url = `${pub.publicUrl}?v=${Date.now()}`;
-    const { error: updErr } = await supabase.from("profiles").update({ logo_url: url }).eq("id", userId);
-    if (updErr) {
-      setError("Enviada, mas não conseguimos salvar.");
-      setBusy(false);
-      return;
-    }
-    setPreview(url);
     setBusy(false);
     router.refresh();
   };
@@ -54,7 +51,7 @@ export function LogoUpload({ userId, logoUrl }: { userId: string; logoUrl?: stri
         )}
       </div>
       <div>
-        <input ref={inputRef} type="file" accept="image/*" hidden onChange={onFile} />
+        <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden onChange={onFile} />
         <Button variant="secondary" size="sm" loading={busy} onClick={() => inputRef.current?.click()}>
           {preview ? "Trocar logo" : "Enviar logo"}
         </Button>

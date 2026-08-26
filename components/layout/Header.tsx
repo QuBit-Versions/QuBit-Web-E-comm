@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Wordmark } from "@/components/brand/Wordmark";
-import { createSupabaseBrowser } from "@/lib/supabaseBrowser";
+import { FUNNEL_START } from "@/lib/funnel";
 
 const navLinks = [
   { href: "/#solucao", label: "Solução" },
@@ -18,11 +18,8 @@ export function Header() {
   const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  // Sem env do Supabase no deploy, o header fica em modo visitante (não derruba a página).
-  const hasSupabaseEnv =
-    !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  // null = ainda não sabemos (evita decidir UI antes de ler o cookie de sessão)
-  const [loggedIn, setLoggedIn] = useState<boolean | null>(hasSupabaseEnv ? null : false);
+  // null = ainda não sabemos (evita decidir UI antes de consultar a sessão)
+  const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 8);
@@ -31,23 +28,22 @@ export function Header() {
     return () => window.removeEventListener("scroll", handler);
   }, []);
 
-  // Reflete a sessão persistida e reage a login/logout em qualquer aba.
+  // Reflete a sessão persistida (cookie httpOnly → consulta ao servidor).
   useEffect(() => {
-    if (!hasSupabaseEnv) return;
-    const supabase = createSupabaseBrowser();
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      setLoggedIn(!!session?.user);
-    });
-    return () => data.subscription.unsubscribe();
-  }, [hasSupabaseEnv]);
+    let alive = true;
+    fetch("/api/auth/sessao")
+      .then((r) => r.json())
+      .then((d) => alive && setLoggedIn(!!d.loggedIn))
+      .catch(() => alive && setLoggedIn(false));
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const logout = async () => {
-    try {
-      await createSupabaseBrowser().auth.signOut();
-    } catch {
-      // sem env de Supabase — apenas segue para a home
-    }
+    await fetch("/api/auth/sair", { method: "POST" }).catch(() => {});
     setMenuOpen(false);
+    setLoggedIn(false);
     router.push("/");
     router.refresh();
   };
@@ -112,8 +108,10 @@ export function Header() {
                 >
                   Entrar
                 </Link>
-                <ButtonLink href="/cadastro" size="sm" className="hidden md:inline-flex">
-                  Criar conta
+                {/* O botão azul é SEMPRE o início do funil de venda. "Criar conta"
+                    não é CTA: é porta de portal e vive dentro do /entrar. */}
+                <ButtonLink href={FUNNEL_START} size="sm" className="hidden md:inline-flex">
+                  Ver serviços
                 </ButtonLink>
               </>
             )}
@@ -179,8 +177,8 @@ export function Header() {
               >
                 Entrar
               </Link>
-              <ButtonLink href="/cadastro" className="mt-2 w-full justify-center" onClick={() => setMenuOpen(false)}>
-                Criar conta
+              <ButtonLink href={FUNNEL_START} className="mt-2 w-full justify-center" onClick={() => setMenuOpen(false)}>
+                Ver serviços
               </ButtonLink>
             </>
           )}

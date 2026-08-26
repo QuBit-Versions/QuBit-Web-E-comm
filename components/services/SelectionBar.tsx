@@ -3,17 +3,19 @@
 import Link from "next/link";
 import { ArrowRight, X } from "lucide-react";
 import { useSelection } from "./SelectionContext";
+import { FUNNEL_CONTACT } from "@/lib/funnel";
 
 /**
- * Barra flutuante: aparece quando há serviços marcados como de interesse e leva
- * à criação de conta já com as escolhas (via ?interesse=ids).
+ * Barra flutuante: aparece quando há serviços marcados e leva à etapa de CONTATO
+ * já com as escolhas (via ?interesse=ids). Nunca para criação de conta — pedir
+ * senha e CNPJ antes da primeira conversa é o atrito que matava este funil.
  */
 export function SelectionBar() {
   const sel = useSelection();
   if (!sel || sel.selected.length === 0) return null;
 
   const n = sel.selected.length;
-  const href = `/cadastro?interesse=${encodeURIComponent(sel.selected.join(","))}`;
+  const href = `${FUNNEL_CONTACT}?interesse=${encodeURIComponent(sel.selected.join(","))}`;
 
   return (
     <div className="fixed bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 z-40 font-sans">
@@ -33,7 +35,7 @@ export function SelectionBar() {
           href={href}
           className="inline-flex items-center gap-2 bg-brand text-paper rounded-xl px-5 min-h-[44px] text-sm font-medium [box-shadow:var(--glow-brand)] hover:[box-shadow:var(--glow-brand-strong)] transition-all"
         >
-          Criar conta
+          Continuar
           <ArrowRight className="w-4 h-4" aria-hidden />
         </Link>
       </div>

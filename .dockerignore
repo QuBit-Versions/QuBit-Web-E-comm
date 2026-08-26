@@ -1,0 +1,22 @@
+node_modules
+.next
+.git
+.github
+.env
+.env.*
+.vercel
+Dockerfile
+.dockerignore
+.gcloudignore
+
+# config local de ferramentas (caminhos desta máquina)
+.mcp.json
+.claude
+
+# backups de assets — não podem entrar na imagem (public/ é copiado inteiro)
+**/*.bak
+**/*.v4bak
+**/*.tsbuildinfo
+
+# documentação não vai para o runtime
+*.md

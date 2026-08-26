@@ -12,14 +12,23 @@ export type Pillar = {
   transversal?: boolean; // continuidade — atravessa todos
 };
 
-export type Tier = { label: string; price: string; note?: string };
+export type Tier = { label: string; price?: string; note?: string };
 
 export type Service = {
   id: string;
   pillarId: string;
   name: string;
-  forWho: string; // "Para empresas que..."
-  fear: string; // medo principal que esta oferta dissolve
+  forWho: string; // "Para empresas que..." — detalhe, vive no nível 2
+  fear: string; // medo principal que esta oferta dissolve (voz do cliente)
+  /**
+   * O PORQUÊ — é isto que faz alguém clicar, não a lista de entregáveis.
+   * `pain`    = o desgaste de HOJE, o peso que sai dos ombros do dono (e da equipe).
+   * `outcome` = o resultado prático DEPOIS, e como se sente com ele.
+   * Regra: concreto e honesto. Nada de prometer faturamento ou ranking — a seção
+   * de transparência diz explicitamente que não prometemos isso.
+   */
+  pain: string;
+  outcome: string;
   price: string; // preço público (crivo de conversão)
   priceModel: "único" | "mensal" | "diagnóstico" | "proposta";
   priceDriver?: string; // "o que muda o valor" — justifica a faixa
@@ -52,7 +61,7 @@ export const pillars: Pillar[] = [
     name: "Crescimento mensurável",
     tagline: "Dados e tráfego que mostram o que cada real fez.",
     fear: "Já gastei com anúncio e nunca soube se deu resultado.",
-    entry: "a partir de R$ 1.000/mês",
+    entry: "a partir de R$ 1.500/mês",
   },
   {
     id: "identidade",
@@ -66,7 +75,7 @@ export const pillars: Pillar[] = [
     name: "Continuidade",
     tagline: "O que mantém tudo de pé depois que entra no ar.",
     fear: "E se quebrar, ficar lento ou inseguro e eu ficar na mão?",
-    entry: "R$ 400 a R$ 800/mês",
+    entry: "a partir de R$ 500/mês",
     transversal: true,
   },
 ];
@@ -80,6 +89,10 @@ export const services: Service[] = [
     name: "Landing page Smart",
     forWho: "Para captar leads, lançar um produto ou validar uma oferta com tráfego pago.",
     fear: "Preciso de uma página que converta a campanha, não um site bonito e vazio.",
+    pain:
+      "Você paga o anúncio, o clique chega numa página que não convence, e o dinheiro escorre sem que ninguém saiba em qual ponto ele se perdeu.",
+    outcome:
+      "Uma página com um trabalho só: virar o clique em contato. Você passa a saber quanto custa cada lead — e a investir sem medo.",
     price: "R$ 1.500 a R$ 2.500",
     priceModel: "único",
     priceDriver: "Complexidade da oferta, integrações e número de seções.",
@@ -109,6 +122,10 @@ export const services: Service[] = [
     name: "Site institucional Smart",
     forWho: "Para apresentar serviços, diferenciais, equipe, portfólio e contato.",
     fear: "Quero passar credibilidade sem depender de agência pra cada ajuste.",
+    pain:
+      "Você manda o link da empresa e sente aquele aperto: o site não representa o tamanho do que você construiu.",
+    outcome:
+      "Um site que sustenta a conversa de venda e que você mesmo ajusta — sem depender de agência para trocar um telefone.",
     price: "R$ 2.500 a R$ 4.500",
     priceModel: "único",
     priceDriver: "Número de páginas, integrações e necessidade de CMS/conteúdo.",
@@ -134,6 +151,10 @@ export const services: Service[] = [
     name: "E-commerce Smart",
     forWho: "Para vender online sobre uma base pronta e confiável, com a sua cara.",
     fear: "Vi loja por menos de R$ 1.500 — por que eu pagaria mais?",
+    pain:
+      "Vender no WhatsApp é correr atrás de cada pedido, um por um. E a loja barata que você viu trava justo quando o movimento cresce.",
+    outcome:
+      "Sua loja vendendo enquanto você dorme, com estoque, frete e pagamento no lugar. Você volta a ser dono do negócio, não do atendimento.",
     price: "R$ 3.500 a R$ 7.000",
     priceModel: "único",
     priceDriver:
@@ -182,6 +203,10 @@ export const services: Service[] = [
     name: "Sistema sob medida (full-stack)",
     forWho: "Para operações que não cabem bem em planilhas, plugins ou ferramentas genéricas.",
     fear: "Vou pagar caro pra só digitalizar um processo ruim — ou ficar preso numa ferramenta que limita meu negócio.",
+    pain:
+      "A operação vive em planilhas que só uma pessoa entende. Levantar um número do mês passado custa uma tarde inteira, e a equipe carrega o desgaste de refazer o que já tinha sido feito.",
+    outcome:
+      "O seu processo vira sistema: cada dado no lugar, cada resposta em segundos. A equipe para de apagar incêndio e volta a fazer o trabalho dela.",
     price: "a partir de R$ 12.000",
     priceModel: "proposta",
     priceDriver: "Módulos, integrações, usuários, regras, segurança, auditoria, prazo e migração de dados.",
@@ -211,6 +236,10 @@ export const services: Service[] = [
     name: "Organização e migração de dados",
     forWho: "Para quem tem dados espalhados em planilhas, ERPs, PDFs e sistemas antigos.",
     fear: "Se eu automatizar em cima de dados bagunçados, só vou automatizar o erro.",
+    pain:
+      "Cada planilha tem um padrão, cada setor tem a sua versão da verdade, e no fim ninguém confia no número que sai.",
+    outcome:
+      "Uma base única e confiável. Você decide olhando dado, não memória — e a reunião para de virar discussão sobre qual planilha está certa.",
     price: "sob diagnóstico (R$ 1.500 a R$ 10.000)",
     priceModel: "diagnóstico",
     priceDriver: "Volume, número de fontes e nível de inconsistência dos cadastros.",
@@ -237,6 +266,10 @@ export const services: Service[] = [
     name: "Sistema de entrega integrado",
     forWho: "Para acompanhar pedidos, organizar entregas e reduzir falhas no pós-venda.",
     fear: "Perco cliente no pós-compra por falta de status e controle da entrega.",
+    pain:
+      "O cliente pergunta “cadê meu pedido?” e você não tem a resposta. Cada atraso vira reclamação, e cada reclamação vira um cliente que não volta.",
+    outcome:
+      "Cada pedido acompanhado do clique até a porta. O cliente se informa sozinho e o seu time recupera o dia que gastava no pós-venda.",
     price: "a partir de R$ 2.500",
     priceModel: "proposta",
     priceDriver: "Integrações com transportadoras/ERP e nível de automação do pós-venda.",
@@ -257,6 +290,10 @@ export const services: Service[] = [
     name: "Aplicativos nativos iOS e Android",
     forWho: "Para experiências premium com câmera, GPS, biometria, push ou uso offline.",
     fear: "App é um investimento alto — preciso ter certeza de que vale duas plataformas.",
+    pain:
+      "O que o seu negócio precisa fazer não cabe dentro de um navegador — e a experiência que você queria entregar fica sempre pela metade.",
+    outcome:
+      "Seu produto no bolso do cliente, com câmera, GPS e notificação. A marca deixa de ser um link salvo e vira um ícone na tela dele.",
     price: "a partir de R$ 25.000",
     priceModel: "proposta",
     priceDriver: "Backend, integrações, pagamentos e manutenção em dois ecossistemas (Kotlin + Swift).",
@@ -286,6 +323,10 @@ export const services: Service[] = [
     name: "Automação de processos internos",
     forWho: "Para eliminar tarefas repetitivas e transferências manuais entre sistemas.",
     fear: "Minha equipe perde horas com conferência e digitação que poderiam ser automáticas.",
+    pain:
+      "Gente qualificada passando o dia copiando dado de um sistema para outro e conferindo o que a máquina conferiria melhor. Cansaço que vira erro, e erro que vira retrabalho.",
+    outcome:
+      "O repetitivo roda sozinho, de madrugada, sem reclamar. Sua equipe volta ao trabalho pelo qual foi contratada — e para de errar por exaustão.",
     price: "sob diagnóstico e escopo",
     priceModel: "diagnóstico",
     priceDriver: "Número de fluxos, sistemas envolvidos e disponibilidade de APIs/webhooks.",
@@ -310,13 +351,17 @@ export const services: Service[] = [
     name: "Dashboards e inteligência operacional",
     forWho: "Para decidir com métricas definidas e fontes confiáveis, não com achismo.",
     fear: "Tenho dados, mas não consigo enxergar o que está vendendo, sobrando ou rompendo.",
-    price: "a partir de R$ 1.500",
+    pain:
+      "Os dados existem, mas para saber se o mês foi bom você espera alguém montar a planilha. Enquanto isso, decidir no escuro virou rotina.",
+    outcome:
+      "Uma tela que responde na hora: o que vende, o que sobra, o que está rompendo. Você decide com número na mão, não com sensação.",
+    price: "a partir de R$ 5.000",
     priceModel: "proposta",
     priceDriver: "Número de indicadores e se as fontes já estão organizadas ou precisam de integração.",
     tiers: [
-      { label: "Dashboard com fonte já organizada", price: "R$ 1.500 a R$ 3.500" },
-      { label: "Dashboard com integração de fontes", price: "R$ 4.000 a R$ 10.000" },
-      { label: "BI operacional contínuo", price: "sob proposta" },
+      { label: "Dashboard com fonte já organizada" },
+      { label: "Dashboard com integração de fontes" },
+      { label: "BI operacional contínuo" },
     ],
     includes: [
       "definição de indicadores",
@@ -334,13 +379,17 @@ export const services: Service[] = [
     name: "Gestão de performance — sem criativos",
     forWho: "Para quem já tem peças prontas e precisa de estratégia e otimização.",
     fear: "Não sei se minha verba está sendo bem gasta nem o que cada campanha trouxe.",
-    price: "a partir de R$ 1.000/mês",
+    pain:
+      "A verba sai todo mês e a resposta é sempre a mesma: “acho que está indo bem”. Ninguém mostra o que cada real trouxe de volta.",
+    outcome:
+      "Campanha estruturada e medida de ponta a ponta. Você passa a ver de onde veio cada contato — e a decidir a verba sem apostar.",
+    price: "a partir de R$ 1.500/mês",
     priceModel: "mensal",
     priceDriver: "Tamanho da verba de mídia e número de canais geridos.",
     tiers: [
-      { label: "Verba até R$ 5.000", price: "R$ 1.000 a R$ 1.500/mês" },
-      { label: "Verba R$ 5.001 a R$ 15.000", price: "R$ 1.500 a R$ 2.500/mês + % do excedente" },
-      { label: "Verba acima de R$ 15.000", price: "sob proposta (fee mínimo + %)" },
+      { label: "Verba até R$ 5.000" },
+      { label: "Verba R$ 5.001 a R$ 15.000", note: "fee + % do excedente" },
+      { label: "Verba acima de R$ 15.000", note: "fee mínimo + %" },
     ],
     includes: [
       "diagnóstico de conta e estratégia de campanhas",
@@ -362,14 +411,18 @@ export const services: Service[] = [
     name: "Gestão de crescimento — com criativos",
     forWho: "Para quem precisa de estratégia de mídia e produção recorrente de peças para teste.",
     fear: "Sem criativos novos pra testar, minha campanha satura e o custo sobe.",
-    price: "a partir de R$ 2.000/mês",
+    pain:
+      "Os anúncios saturam, o custo sobe todo mês, e não sobra fôlego para produzir peça nova toda semana.",
+    outcome:
+      "Criativo novo entrando sem parar, testado e comparado. Você para de depender daquele único anúncio que um dia funcionou.",
+    price: "a partir de R$ 2.500/mês",
     priceModel: "mensal",
     priceDriver: "Quantidade de roteiros/vídeos por mês, formatos e canais atendidos.",
     recommended: true,
     tiers: [
-      { label: "Criativos essenciais — até 4 peças/mês", price: "R$ 2.000 a R$ 3.000/mês + mídia" },
-      { label: "Criativos de escala — 8 a 12 peças/mês", price: "R$ 3.500 a R$ 6.000/mês + mídia" },
-      { label: "Operação multicanal", price: "sob proposta" },
+      { label: "Criativos essenciais — até 4 peças/mês", note: "+ mídia" },
+      { label: "Criativos de escala — 8 a 12 peças/mês", note: "+ mídia" },
+      { label: "Operação multicanal" },
     ],
     includes: [
       "tudo da gestão de performance",
@@ -390,6 +443,10 @@ export const services: Service[] = [
     name: "Design de logomarca essencial",
     forWho: "Para quem precisa de uma marca limpa e coerente entre anúncio, site e atendimento.",
     fear: "Se o cliente chega pelo anúncio e vê uma marca amadora, a percepção de risco dispara antes da venda.",
+    pain:
+      "Cada peça sai com uma cor, cada rede tem uma logo diferente. O cliente chega, sente amadorismo e desiste antes mesmo de perguntar o preço.",
+    outcome:
+      "Uma marca coerente em todo ponto de contato. O cliente bate o olho e confia antes de você dizer a primeira palavra.",
     price: "R$ 500",
     priceModel: "único",
     includes: [
@@ -420,7 +477,11 @@ export const services: Service[] = [
     name: "Manutenção & infraestrutura",
     forWho: "Para manter o ambiente técnico estável, monitorado e recuperável.",
     fear: "E se o site cair, ficar lento ou for invadido e eu não tiver pra quem ligar?",
-    price: "R$ 400 a R$ 800/mês",
+    pain:
+      "Se cair num domingo, você não sabe para quem ligar. Toda atualização vira risco, e todo silêncio do sistema vira preocupação.",
+    outcome:
+      "Alguém cuidando disso por você: backup, monitoramento e resposta quando precisa. Você simplesmente deixa de pensar nesse assunto.",
+    price: "a partir de R$ 500/mês",
     priceModel: "mensal",
     priceDriver: "Volume, criticidade da operação e necessidade de resposta rápida (SLA).",
     includes: [

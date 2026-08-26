@@ -6,9 +6,17 @@ import type { Service } from "@/content/services";
 import { useSelection } from "./SelectionContext";
 
 /**
- * Card de serviço com revelação progressiva (Aurora Glass).
- * Camada visível: nome, para quem, preço + driver, medo que resolve, 4 inclusões.
- * "Ver detalhes" abre: faixas, inclui completo, não inclui, pré-requisitos, notas.
+ * Card de serviço em DOIS NÍVEIS (revelação progressiva).
+ *
+ * Nível 1 — bater o olho. O cliente não é técnico e não compra "entregáveis":
+ * compra a saída de um incômodo. Então a vitrine é o PORQUÊ, não a ficha técnica —
+ * o desgaste de hoje, o resultado depois, e o preço. Nada de jargão aqui.
+ *
+ * Nível 2 — clicou em "Ver detalhes". Aí sim a ficha: para quem é, o que muda o
+ * valor, o que inclui e o que NÃO inclui, faixas, pré-requisitos e notas.
+ *
+ * Por que assim: 11 serviços × 8 blocos de informação no estado fechado era mais
+ * texto do que qualquer pessoa lê para escolher. Densidade é o inimigo da escolha.
  */
 export function ServiceCard({
   service: s,
@@ -36,31 +44,19 @@ export function ServiceCard({
     >
       {s.recommended && <span className="text-mono-label text-brand-text mb-3">recomendado</span>}
 
-      <h3 className="text-h3 text-text-1 mb-2">{s.name}</h3>
-      <p className="text-sm text-text-2 mb-5">{s.forWho}</p>
+      {/* ── Nível 1 — o porquê. Hoje dói assim; depois fica assim; custa isto. ── */}
+      <h3 className="text-h3 text-text-1 mb-4">{s.name}</h3>
 
-      {/* Preço (font-sans p/ legibilidade dos números) + driver */}
-      <div className="mb-5">
-        <span className="font-sans text-2xl font-medium text-text-1">{s.price}</span>
-        {s.priceDriver && (
-          <p className="text-xs text-text-3 mt-1.5">
-            <span className="text-text-2">O que muda o valor:</span> {s.priceDriver}
-          </p>
-        )}
-      </div>
+      <p className="text-sm text-text-3 mb-3">
+        <span className="font-sans text-mono-label text-text-3 block mb-1">hoje</span>
+        {s.pain}
+      </p>
+      <p className="text-sm text-text-1 mb-5 border-l-2 border-brand/50 pl-3">
+        <span className="font-sans text-mono-label text-brand-text block mb-1">depois</span>
+        {s.outcome}
+      </p>
 
-      {/* Medo que resolve */}
-      <p className="text-sm text-text-2 border-l-2 border-brand/40 pl-3 mb-5 italic">“{s.fear}”</p>
-
-      {/* Top inclusões */}
-      <ul className="space-y-2 mb-5">
-        {s.includes.slice(0, 4).map((item) => (
-          <li key={item} className="flex gap-2 text-sm text-text-2">
-            <Check className="w-4 h-4 shrink-0 mt-0.5 text-brand-text" aria-hidden strokeWidth={2} />
-            {item}
-          </li>
-        ))}
-      </ul>
+      <p className="font-sans text-2xl font-medium text-text-1 mb-5">{s.price}</p>
 
       <div className="mt-auto pt-2">
         {canSelect && (
@@ -98,20 +94,33 @@ export function ServiceCard({
 
       {open && (
         <div className="mt-2 pt-5 border-t border-line space-y-6 text-sm">
+          {/* Ficha técnica. O porquê já foi dado na vitrine — aqui não se repete. */}
+          <Section title="Para quem é">
+            <p className="text-text-2">{s.forWho}</p>
+          </Section>
+
+          {s.priceDriver && (
+            <Section title="O que muda o valor">
+              <p className="text-text-2">{s.priceDriver}</p>
+            </Section>
+          )}
+
           {s.tiers && s.tiers.length > 0 && (
-            <Section title="Faixas de investimento">
+            <Section title="Faixas de escopo">
               <ul className="space-y-1.5">
                 {s.tiers.map((t) => (
                   <li key={t.label} className="flex justify-between gap-4">
                     <span className="text-text-2">{t.label}</span>
-                    <span className="font-sans text-text-1 shrink-0">{t.price}</span>
+                    {(t.price ?? t.note) && (
+                      <span className="font-sans text-text-1 shrink-0">{t.price ?? t.note}</span>
+                    )}
                   </li>
                 ))}
               </ul>
             </Section>
           )}
 
-          {s.includes.length > 4 && (
+          {s.includes.length > 0 && (
             <Section title="Inclui">
               <ul className="space-y-1.5">
                 {s.includes.map((item) => (

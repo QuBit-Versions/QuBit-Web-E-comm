@@ -1,0 +1,15 @@
+# O que NÃO sobe para o Cloud Build.
+node_modules
+.next
+.git
+.env
+.env.*
+.vercel
+.github
+.mcp.json
+.claude
+
+# backups de assets
+*.bak
+*.v4bak
+*.tsbuildinfo

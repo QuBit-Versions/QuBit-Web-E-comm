@@ -37,7 +37,9 @@ export const metadata: Metadata = {
   description:
     "Construímos sua loja, cuidamos de toda a infraestrutura e operamos seu tráfego com inteligência de dados. Você foca em vender.",
   metadataBase: new URL("https://qubit.com.br"), // TODO: domínio real
-  alternates: { canonical: "/" },
+  // ATENÇÃO: nada de `alternates.canonical` aqui. Metadata é herdada pelas rotas
+  // filhas, então um canonical no layout declara TODA página como duplicata da
+  // home. Cada page.tsx define o seu.
   openGraph: {
     title: "QuBit — Tecnologia & Crescimento",
     description:

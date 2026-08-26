@@ -9,6 +9,7 @@ import { SnapMode } from "@/components/ui/SnapMode";
 import { ButtonLink } from "@/components/ui/Button";
 import { Stepper } from "@/components/funnel/Stepper";
 import { site } from "@/content/copy";
+import { FUNNEL_CONTACT } from "@/lib/funnel";
 
 export const metadata: Metadata = {
   title: `Serviços e investimento — ${site.name}`,
@@ -61,7 +62,6 @@ export default function ServicosPage() {
                     )}
                   </div>
                   <p className="b-item text-body-lg text-text-2" style={st(1)}>{pillar.tagline}</p>
-                  <p className="b-item text-sm text-text-3 mt-1 italic" style={st(2)}>Resolve: “{pillar.fear}”</p>
                 </div>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
                   {list.map((s, i) => (
@@ -141,7 +141,7 @@ export default function ServicosPage() {
               Marque as soluções de interesse acima e use a barra para seguir — ou agende o diagnóstico
               direto. Ele é gratuito e aponta o caminho certo para o seu momento.
             </p>
-            <ButtonLink href="/diagnostico" size="lg">Agendar diagnóstico</ButtonLink>
+            <ButtonLink href={FUNNEL_CONTACT} size="lg">Agendar diagnóstico</ButtonLink>
           </div>
         </Block>
 

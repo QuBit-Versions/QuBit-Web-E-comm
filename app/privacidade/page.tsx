@@ -5,6 +5,7 @@ import { legal_pages, site } from "@/content/copy";
 export const metadata: Metadata = {
   title: `${legal_pages.privacidade.title} — ${site.name}`,
   description: legal_pages.privacidade.intro,
+  alternates: { canonical: "/privacidade" },
 };
 
 export default function PrivacidadePage() {

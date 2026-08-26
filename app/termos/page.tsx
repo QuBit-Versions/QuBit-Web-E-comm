@@ -5,6 +5,7 @@ import { legal_pages, site } from "@/content/copy";
 export const metadata: Metadata = {
   title: `${legal_pages.termos.title} — ${site.name}`,
   description: legal_pages.termos.intro,
+  alternates: { canonical: "/termos" },
 };
 
 export default function TermosPage() {
